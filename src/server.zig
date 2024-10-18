@@ -1,17 +1,22 @@
 const std = @import("std");
 
-pub const HandlerType = *const fn (
-    *const fn (response: []const u8) void,
-    []const u8,
-) void;
+pub const HandlerType = *const fn ([]const u8) []const u8;
+
+// pub const ServerState = enum {
+//     Init,
+//     Started,
+//     Initialized,
+//     Shutdown,
+//     pub fn validateMove(from: ServerState, to: ServerState) bool {}
+// };
+// pub const ServerAction = enum { Initialize, Shutdown, Exit };
 
 pub const Server = struct {
     const Self = @This();
     var running: bool = false;
-    var initialized: bool = false;
-    pub var handlers: std.StringHashMap(HandlerType) = undefined;
-    pub var exitHandler: []const u8 = "";
-    pub var unknownHandler: []const u8 = "";
+    var handlers: std.StringHashMap(HandlerType) = undefined;
+    var exitHandler: []const u8 = "";
+    var unknownHandler: []const u8 = "";
 
     pub fn exit() void {
         std.log.debug("server exit", .{});
@@ -82,16 +87,20 @@ pub const Server = struct {
                 if (std.mem.startsWith(u8, request, kv.key_ptr.*)) {
                     std.log.debug("found handler for {s}", .{kv.key_ptr.*});
                     found = true;
-                    kv.value_ptr.*(&Self.sendResponse, request);
+
                     if (std.mem.eql(u8, kv.key_ptr.*, exitHandler)) {
                         Self.exit();
+                    } else {
+                        const response = kv.value_ptr.*(request);
+                        sendResponse(response);
                     }
                 }
             }
             if (!found) {
                 std.log.debug("handler for request not found", .{});
                 const unk: HandlerType = handlers.get(unknownHandler).?;
-                unk(&Self.sendResponse, request);
+                const response = unk(request);
+                sendResponse(response);
             }
         }
     }
