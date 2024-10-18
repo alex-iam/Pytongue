@@ -15,9 +15,9 @@ pub fn main() !void {
     defer handlers.deinit();
 
     try handlers.put("initialize", &h.handleInitialize);
-    try handlers.put("shutdown", &h.handleInitialize);
-    try handlers.put("exit", &h.handleInitialize);
-    try handlers.put("unknown", &h.handleInitialize);
+    try handlers.put("shutdown", &h.handleShutown);
+    try handlers.put("exit", &h.handleExit);
+    try handlers.put("unknown", &h.handleUnknown);
 
     server.Server.init(
         handlers,
