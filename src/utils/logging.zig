@@ -1,7 +1,7 @@
+//! Temporary logging
+
 const std = @import("std");
 const time = @import("time.zig");
-
-pub var log_file: std.fs.File = undefined;
 
 pub fn logMessageFn(
     comptime level: std.log.Level,
@@ -20,6 +20,14 @@ pub fn logMessageFn(
     ) catch return;
     defer std.heap.page_allocator.free(msg);
 
-    // Write the formatted message to the file
-    log_file.writeAll(msg) catch return;
+    var log_file = openFile();
+    log_file.writeAll(msg) catch unreachable;
+    log_file.close();
+}
+
+pub fn openFile() std.fs.File {
+    var log_file = std.fs.openFileAbsolute("/home/alex/Documents/code/zig/pytongue/logs/all.log", .{ .mode = .write_only }) catch unreachable;
+    const stat = log_file.stat() catch unreachable;
+    log_file.seekTo(stat.size) catch unreachable;
+    return log_file;
 }
