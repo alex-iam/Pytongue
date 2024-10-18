@@ -26,7 +26,10 @@ pub fn logMessageFn(
 }
 
 pub fn openFile() std.fs.File {
-    var log_file = std.fs.openFileAbsolute("/home/alex/Documents/code/zig/pytongue/logs/all.log", .{ .mode = .write_only }) catch unreachable;
+    var log_file = std.fs.openFileAbsolute(
+        "/home/alex/Documents/code/zig/pytongue/logs/all.log",
+        .{ .mode = .write_only },
+    ) catch unreachable;
     const stat = log_file.stat() catch unreachable;
     log_file.seekTo(stat.size) catch unreachable;
     return log_file;

@@ -1,9 +1,22 @@
 const std = @import("std");
 
+pub const HandlerType = *const fn (
+    *const fn (response: []const u8) void,
+    []const u8,
+) void;
+
 pub const Server = struct {
     const Self = @This();
     var running: bool = false;
     var initialized: bool = false;
+    pub var handlers: std.StringHashMap(HandlerType) = undefined;
+    pub var exitHandler: []const u8 = "";
+    pub var unknownHandler: []const u8 = "";
+
+    pub fn exit() void {
+        std.log.debug("server exit", .{});
+        Self.running = false;
+    }
 
     pub fn parseRequest() ![]const u8 {
         std.log.debug("server parseRequest", .{});
@@ -11,7 +24,11 @@ pub const Server = struct {
         defer _ = gpa.deinit();
         const allocator = gpa.allocator();
 
-        var header = try std.io.getStdIn().reader().readUntilDelimiterAlloc(allocator, '\n', std.math.maxInt(usize));
+        var header = try std.io.getStdIn().reader().readUntilDelimiterAlloc(
+            allocator,
+            '\n',
+            std.math.maxInt(usize),
+        );
         defer allocator.free(header);
 
         if (header.len == 0) {
@@ -34,20 +51,22 @@ pub const Server = struct {
         return content;
     }
 
-    pub fn sendResponse(response: []const u8) !void {
+    pub fn sendResponse(response: []const u8) void {
         std.log.debug("server sendResponse", .{});
         const stdout = std.io.getStdOut().writer();
-        try stdout.print("Content-Length: {d}\r\n\r\n", .{response.len});
-        try stdout.writeAll(response);
+        stdout.print("Content-Length: {d}\r\n\r\n", .{response.len}) catch unreachable;
+        stdout.writeAll(response) catch unreachable;
     }
 
-    pub fn handleExit() void {
-        std.log.debug("server handleExit", .{});
-        Self.running = false;
-    }
-
-    pub fn init() void {
+    pub fn init(
+        h: std.StringHashMap(HandlerType),
+        e: []const u8,
+        u: []const u8,
+    ) void {
         Self.running = true;
+        handlers = h;
+        exitHandler = e;
+        unknownHandler = u;
         std.log.debug("server init", .{});
     }
 
@@ -60,18 +79,22 @@ pub const Server = struct {
                 continue;
             }
 
-            if (std.mem.startsWith(u8, request, "initialize")) {
-                std.log.debug("initialize request", .{});
-                try Self.sendResponse("Initialized with basic capabilities");
-            } else if (std.mem.startsWith(u8, request, "shutdown")) {
-                std.log.debug("shutdown request", .{});
-                try Self.sendResponse("Server shutting down");
-            } else if (std.mem.startsWith(u8, request, "exit")) {
-                std.log.debug("exit request", .{});
-                Self.handleExit();
-            } else {
-                std.log.debug("unknown request", .{});
-                try Self.sendResponse("Unknown method");
+            var it = handlers.iterator();
+            var found = false;
+            while (it.next()) |kv| {
+                if (std.mem.startsWith(u8, request, kv.key_ptr.*)) {
+                    std.log.debug("found handler for {s}", .{kv.key_ptr.*});
+                    found = true;
+                    kv.value_ptr.*(&Self.sendResponse, request);
+                    if (std.mem.eql(u8, kv.key_ptr.*, exitHandler)) {
+                        Self.exit();
+                    }
+                }
+            }
+            if (!found) {
+                std.log.debug("handler for request not found", .{});
+                const unk: HandlerType = handlers.get(unknownHandler).?;
+                unk(&Self.sendResponse, request);
             }
         }
     }
