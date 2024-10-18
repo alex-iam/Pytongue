@@ -18,11 +18,8 @@ pub const Server = struct {
         Self.running = false;
     }
 
-    pub fn parseRequest() ![]const u8 {
+    pub fn parseRequest(allocator: std.mem.Allocator) ![]const u8 {
         std.log.debug("server parseRequest", .{});
-        var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-        defer _ = gpa.deinit();
-        const allocator = gpa.allocator();
 
         var header = try std.io.getStdIn().reader().readUntilDelimiterAlloc(
             allocator,
@@ -48,7 +45,7 @@ pub const Server = struct {
             return error.UnexpectedEOF;
         }
         std.log.debug("server parseRequest {s}", .{content});
-        return content;
+        return try allocator.dupe(u8, content);
     }
 
     pub fn sendResponse(response: []const u8) void {
@@ -70,10 +67,10 @@ pub const Server = struct {
         std.log.debug("server init", .{});
     }
 
-    pub fn serve() !void {
+    pub fn serve(allocator: std.mem.Allocator) !void {
         std.log.debug("server serve", .{});
         while (Self.running) {
-            const request = try Self.parseRequest();
+            const request = try Self.parseRequest(allocator);
             if (request.len == 0) {
                 std.log.debug("server serve empty request", .{});
                 continue;

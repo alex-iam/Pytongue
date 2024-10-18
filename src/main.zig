@@ -10,7 +10,8 @@ pub const std_options = .{
 pub fn main() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
-    var handlers = std.StringHashMap(server.HandlerType).init(arena.allocator());
+    const allocator = arena.allocator();
+    var handlers = std.StringHashMap(server.HandlerType).init(allocator);
     defer handlers.deinit();
 
     try handlers.put("initialize", &h.handleInitialize);
@@ -23,5 +24,5 @@ pub fn main() !void {
         "exit",
         "unknown",
     );
-    try server.Server.serve();
+    try server.Server.serve(allocator);
 }
