@@ -1,0 +1,250 @@
+{
+    "jsonrpc": "2.0",
+    "id": "1",
+    "method": "initialize",
+    "params": {
+        "processId": 134025,
+        "rootPath": "/home/alex/Documents/code/cpp/Pytongue",
+        "rootUri": "file:///home/alex/Documents/code/cpp/Pytongue",
+        "capabilities": {
+            "workspace": {
+                "applyEdit": true,
+                "workspaceEdit": {
+                    "documentChanges": true,
+                    "resourceOperations": [
+                        "create",
+                        "delete",
+                        "rename"
+                    ]
+                },
+                "didChangeConfiguration": {
+                    "dynamicRegistration": true
+                },
+                "didChangeWatchedFiles": {
+                    "dynamicRegistration": true
+                },
+                "symbol": {},
+                "executeCommand": {
+                    "dynamicRegistration": true
+                },
+                "workspaceFolders": true,
+                "configuration": true,
+                "semanticTokens": {
+                    "refreshSupport": true
+                },
+                "fileOperations": {
+                    "didRename": true,
+                    "willRename": true,
+                    "dynamicRegistration": true
+                },
+                "inlayHint": {
+                    "refreshSupport": true
+                }
+            },
+            "textDocument": {
+                "synchronization": {
+                    "willSave": true,
+                    "willSaveWaitUntil": true,
+                    "didSave": true
+                },
+                "completion": {
+                    "completionItem": {
+                        "snippetSupport": true,
+                        "documentationFormat": [
+                            "markdown",
+                            "plaintext"
+                        ],
+                        "deprecatedSupport": true,
+                        "resolveSupport": {
+                            "properties": [
+                                "documentation",
+                                "detail",
+                                "additionalTextEdits"
+                            ]
+                        },
+                        "insertTextModeSupport": {
+                            "valueSet": [
+                                1,
+                                2
+                            ]
+                        },
+                        "labelDetailsSupport": true
+                    },
+                    "completionList": {
+                        "itemDefaults": [
+                            "editRange"
+                        ]
+                    }
+                },
+                "hover": {
+                    "contentFormat": [
+                        "markdown",
+                        "plaintext"
+                    ]
+                },
+                "signatureHelp": {
+                    "signatureInformation": {
+                        "parameterInformation": {
+                            "labelOffsetSupport": true
+                        }
+                    }
+                },
+                "references": {},
+                "documentHighlight": {},
+                "documentSymbol": {
+                    "symbolKind": {
+                        "valueSet": [
+                            18,
+                            17,
+                            5,
+                            14,
+                            9,
+                            10,
+                            22,
+                            24,
+                            8,
+                            1,
+                            12,
+                            11,
+                            20,
+                            6,
+                            2,
+                            3,
+                            21,
+                            16,
+                            19,
+                            25,
+                            4,
+                            7,
+                            15,
+                            23,
+                            26,
+                            13
+                        ]
+                    },
+                    "hierarchicalDocumentSymbolSupport": true
+                },
+                "formatting": {
+                    "dynamicRegistration": true
+                },
+                "rangeFormatting": {
+                    "dynamicRegistration": true
+                },
+                "declaration": {
+                    "linkSupport": true
+                },
+                "definition": {
+                    "linkSupport": true
+                },
+                "typeDefinition": {
+                    "linkSupport": true
+                },
+                "implementation": {
+                    "linkSupport": true
+                },
+                "codeAction": {
+                    "codeActionLiteralSupport": {
+                        "codeActionKind": {
+                            "valueSet": [
+                                "quickfix",
+                                "refactor",
+                                "refactor.extract",
+                                "refactor.inline",
+                                "refactor.rewrite",
+                                "source",
+                                "source.organizeImports"
+                            ]
+                        }
+                    },
+                    "dataSupport": true,
+                    "resolveSupport": {
+                        "properties": [
+                            "edit"
+                        ]
+                    },
+                    "dynamicRegistration": true
+                },
+                "codeLens": {},
+                "documentLink": {},
+                "colorProvider": {},
+                "rename": {
+                    "prepareSupport": true
+                },
+                "publishDiagnostics": {
+                    "relatedInformation": true,
+                    "tagSupport": {
+                        "valueSet": [
+                            1,
+                            2
+                        ]
+                    },
+                    "codeDescriptionSupport": true,
+                    "dataSupport": true
+                },
+                "foldingRange": {},
+                "semanticTokens": {
+                    "requests": {
+                        "range": false,
+                        "full": true
+                    },
+                    "tokenTypes": [
+                        "namespace",
+                        "type",
+                        "class",
+                        "enum",
+                        "interface",
+                        "struct",
+                        "typeParameter",
+                        "parameter",
+                        "variable",
+                        "property",
+                        "enumMember",
+                        "event",
+                        "function",
+                        "method",
+                        "macro",
+                        "keyword",
+                        "modifier",
+                        "comment",
+                        "string",
+                        "number",
+                        "regexp",
+                        "operator",
+                        "decorator",
+                        "label"
+                    ],
+                    "tokenModifiers": [
+                        "declaration",
+                        "definition",
+                        "readonly",
+                        "static"
+                    ],
+                    "formats": [
+                        "relative"
+                    ],
+                    "multilineTokenSupport": true,
+                    "serverCancelSupport": true
+                },
+                "inlayHint": {}
+            },
+            "window": {
+                "workDoneProgress": true,
+                "showMessage": {},
+                "showDocument": {
+                    "support": true
+                }
+            }
+        },
+        "clientInfo": {
+            "name": "IntelliJ",
+            "version": "CLion (build CL-242.22855.75)"
+        },
+        "trace": "off",
+        "workspaceFolders": [
+            {
+                "uri": "file:///home/alex/Documents/code/cpp/Pytongue",
+                "name": "Pytongue"
+            }
+        ]
+    }
+}
