@@ -27,14 +27,14 @@ pub fn logMessageFn(
     ) catch return;
     defer std.heap.page_allocator.free(msg);
 
-    var log_file = openFile();
+    var log_file = openFile(log_file_name.?);
     log_file.writeAll(msg) catch unreachable;
     log_file.close();
 }
 
-pub fn openFile() std.fs.File {
+pub fn openFile(filename: []const u8) std.fs.File {
     var log_file = std.fs.openFileAbsolute(
-        log_file_name.?,
+        filename,
         .{ .mode = .write_only },
     ) catch unreachable;
     const stat = log_file.stat() catch unreachable;
