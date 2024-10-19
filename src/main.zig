@@ -11,6 +11,13 @@ pub fn main() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
     const allocator = arena.allocator();
+
+    var env_map = try std.process.getEnvMap(allocator);
+    defer env_map.deinit();
+
+    const lfn = env_map.get("PYTONGUE_LOG");
+    logging.log_file_name = lfn;
+
     var handlers = std.StringHashMap(server.HandlerType).init(allocator);
     defer handlers.deinit();
 

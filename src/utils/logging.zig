@@ -3,12 +3,19 @@
 const std = @import("std");
 const time = @import("time.zig");
 
+pub var log_file_name: ?[]const u8 = null;
+
 pub fn logMessageFn(
     comptime level: std.log.Level,
     comptime scope: @TypeOf(.EnumLiteral),
     comptime format: []const u8,
     args: anytype,
 ) void {
+    if (log_file_name == null) {
+        std.log.defaultLog(level, scope, format, args);
+        return;
+    }
+
     var buffer: [12]u8 = undefined;
     const timestamp = time.getTimestamp(&buffer);
 
@@ -27,7 +34,7 @@ pub fn logMessageFn(
 
 pub fn openFile() std.fs.File {
     var log_file = std.fs.openFileAbsolute(
-        "/home/alex/Documents/code/zig/pytongue/logs/all.log",
+        log_file_name.?,
         .{ .mode = .write_only },
     ) catch unreachable;
     const stat = log_file.stat() catch unreachable;
