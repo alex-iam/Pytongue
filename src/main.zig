@@ -1,4 +1,5 @@
-const server = @import("server.zig");
+const Server = @import("server.zig").Server;
+const HandlerType = @import("server.zig").HandlerType;
 const std = @import("std");
 const logging = @import("utils/logging.zig");
 const h = @import("handlers.zig");
@@ -7,8 +8,8 @@ pub const std_options = .{
     .logFn = logging.logMessageFn,
 };
 
-pub fn initHandlers(allocator: std.mem.Allocator) !std.StringHashMap(server.HandlerType) {
-    var handlers = std.StringHashMap(server.HandlerType).init(allocator);
+pub fn initHandlers(allocator: std.mem.Allocator) !std.StringHashMap(HandlerType) {
+    var handlers = std.StringHashMap(HandlerType).init(allocator);
 
     try handlers.put("initialize", &h.handleInitialize);
     try handlers.put("shutdown", &h.handleShutown);
@@ -40,10 +41,10 @@ pub fn main() !void {
         }
     }
 
-    server.Server.init(
+    var server = Server.init(
         handlers,
         "exit",
         "unknown",
     );
-    try server.Server.serve(allocator);
+    try server.serve(allocator);
 }

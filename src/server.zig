@@ -3,27 +3,25 @@ const std = @import("std");
 pub const HandlerType = *const fn ([]const u8) []const u8;
 
 // pub const ServerState = enum {
-//     Init,
+//     Created,
 //     Started,
 //     Initialized,
 //     Shutdown,
 //     pub fn validateMove(from: ServerState, to: ServerState) bool {}
 // };
-// pub const ServerAction = enum { Initialize, Shutdown, Exit };
 
 pub const Server = struct {
-    const Self = @This();
-    var running: bool = false;
-    var handlers: std.StringHashMap(HandlerType) = undefined;
-    var exitHandler: []const u8 = "";
-    var unknownHandler: []const u8 = "";
+    running: bool = false,
+    handlers: std.StringHashMap(HandlerType) = undefined,
+    exitHandler: []const u8 = "",
+    unknownHandler: []const u8 = "",
 
-    pub fn exit() void {
+    fn exit(self: *Server) void {
         std.log.debug("server exit", .{});
-        Self.running = false;
+        self.running = false;
     }
 
-    pub fn parseRequest(allocator: std.mem.Allocator) ![]const u8 {
+    fn parseRequest(_: *Server, allocator: std.mem.Allocator) ![]const u8 {
         std.log.debug("server parseRequest", .{});
 
         var header = try std.io.getStdIn().reader().readUntilDelimiterAlloc(
@@ -53,7 +51,7 @@ pub const Server = struct {
         return try allocator.dupe(u8, content);
     }
 
-    pub fn sendResponse(response: []const u8) void {
+    fn sendResponse(_: *Server, response: []const u8) void {
         std.log.debug("server sendResponse", .{});
         const stdout = std.io.getStdOut().writer();
         stdout.print("Content-Length: {d}\r\n\r\n", .{response.len}) catch unreachable;
@@ -64,43 +62,45 @@ pub const Server = struct {
         h: std.StringHashMap(HandlerType),
         e: []const u8,
         u: []const u8,
-    ) void {
-        Self.running = true;
-        handlers = h;
-        exitHandler = e;
-        unknownHandler = u;
+    ) Server {
         std.log.debug("server init", .{});
+        return Server{
+            .running = true,
+            .handlers = h,
+            .exitHandler = e,
+            .unknownHandler = u,
+        };
     }
 
-    pub fn serve(allocator: std.mem.Allocator) !void {
+    pub fn serve(self: *Server, allocator: std.mem.Allocator) !void {
         std.log.debug("server serve", .{});
-        while (Self.running) {
-            const request = try Self.parseRequest(allocator);
+        while (self.running) {
+            const request = try self.parseRequest(allocator);
             if (request.len == 0) {
                 std.log.debug("server serve empty request", .{});
                 continue;
             }
 
-            var it = handlers.iterator();
+            var it = self.handlers.iterator();
             var found = false;
             while (it.next()) |kv| {
                 if (std.mem.startsWith(u8, request, kv.key_ptr.*)) {
                     std.log.debug("found handler for {s}", .{kv.key_ptr.*});
                     found = true;
 
-                    if (std.mem.eql(u8, kv.key_ptr.*, exitHandler)) {
-                        Self.exit();
+                    if (std.mem.eql(u8, kv.key_ptr.*, self.exitHandler)) {
+                        self.exit();
                     } else {
                         const response = kv.value_ptr.*(request);
-                        sendResponse(response);
+                        self.sendResponse(response);
                     }
                 }
             }
             if (!found) {
                 std.log.debug("handler for request not found", .{});
-                const unk: HandlerType = handlers.get(unknownHandler).?;
+                const unk: HandlerType = self.handlers.get(self.unknownHandler).?;
                 const response = unk(request);
-                sendResponse(response);
+                self.sendResponse(response);
             }
         }
     }
