@@ -9,7 +9,6 @@ pub const std_options = .{
 
 pub fn initHandlers(allocator: std.mem.Allocator) !std.StringHashMap(server.HandlerType) {
     var handlers = std.StringHashMap(server.HandlerType).init(allocator);
-    defer handlers.deinit();
 
     try handlers.put("initialize", &h.handleInitialize);
     try handlers.put("shutdown", &h.handleShutown);
@@ -32,7 +31,8 @@ pub fn main() !void {
     defer arena.deinit();
     const allocator = arena.allocator();
 
-    const handlers = try initHandlers(allocator);
+    var handlers = try initHandlers(allocator);
+    defer handlers.deinit();
     try initEnv(allocator);
     defer {
         if (logging.log_file_name) |lfn| {

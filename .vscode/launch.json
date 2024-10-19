@@ -10,7 +10,10 @@
             "request": "launch",
             "program": "${workspaceFolder}/zig-out/bin/pytongue",
             "cwd": "${workspaceFolder}",
-            "preLaunchTask": "build"
+            "preLaunchTask": "build",
+            "env": {
+                "PYTONGUE_LOG": "/home/alex/Documents/code/Pytongue/logs/all.log"
+            }
         }
     ]
 }
