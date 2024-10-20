@@ -1,4 +1,4 @@
-const enums = @import("enums.zig");
+const enums = @import("../enums.zig");
 const base_c = @import("base.zig");
 
 pub const FileOperations = struct {

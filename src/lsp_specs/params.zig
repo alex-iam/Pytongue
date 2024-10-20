@@ -1,5 +1,5 @@
 const types = @import("lsp_types.zig");
-const ClientCapabilities = @import("capabilities/client_capabilities.zig").ClientCapabilities;
+const ClientCapabilities = @import("capabilities/client.zig").ClientCapabilities;
 const enums = @import("enums.zig");
 
 pub const WorkDoneProgressParams = struct {
@@ -86,4 +86,12 @@ pub const InitializeParams = struct {
     /// @since 3.6.0
     ///
     const workspaceFolders: ?[]WorkspaceFolder = null;
+};
+
+pub const InitializeResult = struct {
+    capabilities: struct {}, // TODO ServerCapabilities
+    serverInfo: ?struct {
+        name: []const u8,
+        version: ?[]const u8,
+    },
 };
