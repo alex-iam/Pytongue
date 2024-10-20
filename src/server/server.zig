@@ -3,7 +3,7 @@ const StateManager = @import("state.zig").StateManager;
 
 pub const Server = struct {
     stateManager: StateManager = .{},
-    baseHandler: *const fn (*StateManager, []const u8) []const u8,
+    baseHandler: *const fn (*StateManager, std.mem.Allocator, []const u8) ?[]const u8,
 
     fn parseRequest(_: *Server, allocator: std.mem.Allocator) ![]const u8 {
         std.log.debug("server parseRequest", .{});
@@ -53,8 +53,9 @@ pub const Server = struct {
                 std.log.debug("server serve empty request", .{});
                 continue;
             }
-            const response = self.baseHandler(&self.stateManager, request);
-            self.sendResponse(response);
+            if (self.baseHandler(&self.stateManager, allocator, request)) |response| {
+                self.sendResponse(response);
+            }
         }
     }
 };
