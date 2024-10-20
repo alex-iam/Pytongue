@@ -1,28 +1,14 @@
 const std = @import("std");
-
-pub const HandlerType = *const fn ([]const u8) []const u8;
-
-// pub const ServerState = enum {
-//     Created,
-//     Started,
-//     Initialized,
-//     Shutdown,
-//     pub fn validateMove(from: ServerState, to: ServerState) bool {}
-// };
+const StateManager = @import("state.zig").StateManager;
 
 pub const Server = struct {
-    running: bool = false,
-    handlers: std.StringHashMap(HandlerType) = undefined,
-    exitHandler: []const u8 = "",
-    unknownHandler: []const u8 = "",
-
-    fn exit(self: *Server) void {
-        std.log.debug("server exit", .{});
-        self.running = false;
-    }
+    stateManager: StateManager = .{},
+    baseHandler: *const fn (*StateManager, []const u8) []const u8,
 
     fn parseRequest(_: *Server, allocator: std.mem.Allocator) ![]const u8 {
         std.log.debug("server parseRequest", .{});
+
+        // TODO: there might be optional Content-Type header
 
         var header = try std.io.getStdIn().reader().readUntilDelimiterAlloc(
             allocator,
@@ -58,50 +44,17 @@ pub const Server = struct {
         stdout.writeAll(response) catch unreachable;
     }
 
-    pub fn init(
-        h: std.StringHashMap(HandlerType),
-        e: []const u8,
-        u: []const u8,
-    ) Server {
-        std.log.debug("server init", .{});
-        return Server{
-            .running = true,
-            .handlers = h,
-            .exitHandler = e,
-            .unknownHandler = u,
-        };
-    }
-
     pub fn serve(self: *Server, allocator: std.mem.Allocator) !void {
         std.log.debug("server serve", .{});
-        while (self.running) {
+        try self.stateManager.startServer();
+        while (self.stateManager.shouldBeRunning()) {
             const request = try self.parseRequest(allocator);
             if (request.len == 0) {
                 std.log.debug("server serve empty request", .{});
                 continue;
             }
-
-            var it = self.handlers.iterator();
-            var found = false;
-            while (it.next()) |kv| {
-                if (std.mem.startsWith(u8, request, kv.key_ptr.*)) {
-                    std.log.debug("found handler for {s}", .{kv.key_ptr.*});
-                    found = true;
-
-                    if (std.mem.eql(u8, kv.key_ptr.*, self.exitHandler)) {
-                        self.exit();
-                    } else {
-                        const response = kv.value_ptr.*(request);
-                        self.sendResponse(response);
-                    }
-                }
-            }
-            if (!found) {
-                std.log.debug("handler for request not found", .{});
-                const unk: HandlerType = self.handlers.get(self.unknownHandler).?;
-                const response = unk(request);
-                self.sendResponse(response);
-            }
+            const response = self.baseHandler(&self.stateManager, request);
+            self.sendResponse(response);
         }
     }
 };

@@ -1,5 +1,4 @@
-const Server = @import("server.zig").Server;
-const HandlerType = @import("server.zig").HandlerType;
+const Server = @import("server/server.zig").Server;
 const std = @import("std");
 const logging = @import("utils/logging.zig");
 const h = @import("handlers.zig");
@@ -7,16 +6,6 @@ const h = @import("handlers.zig");
 pub const std_options = .{
     .logFn = logging.logMessageFn,
 };
-
-pub fn initHandlers(allocator: std.mem.Allocator) !std.StringHashMap(HandlerType) {
-    var handlers = std.StringHashMap(HandlerType).init(allocator);
-
-    try handlers.put("initialize", &h.handleInitialize);
-    try handlers.put("shutdown", &h.handleShutown);
-    try handlers.put("exit", &h.handleExit);
-    try handlers.put("unknown", &h.handleUnknown);
-    return handlers;
-}
 
 pub fn initEnv(allocator: std.mem.Allocator) !void {
     var env_map = try std.process.getEnvMap(allocator);
@@ -32,8 +21,6 @@ pub fn main() !void {
     defer arena.deinit();
     const allocator = arena.allocator();
 
-    var handlers = try initHandlers(allocator);
-    defer handlers.deinit();
     try initEnv(allocator);
     defer {
         if (logging.log_file_name) |lfn| {
@@ -41,10 +28,6 @@ pub fn main() !void {
         }
     }
 
-    var server = Server.init(
-        handlers,
-        "exit",
-        "unknown",
-    );
+    var server = Server{ .baseHandler = &h.baseHandler };
     try server.serve(allocator);
 }
