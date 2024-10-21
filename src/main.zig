@@ -7,12 +7,14 @@ pub const std_options = .{
     .logFn = logging.logMessageFn,
 };
 
-pub fn initEnv(allocator: std.mem.Allocator) !void {
+pub fn initLogging(allocator: std.mem.Allocator) !void {
+    logging.GlobalLogger = logging.Logger.init(allocator);
+
     var env_map = try std.process.getEnvMap(allocator);
     defer env_map.deinit();
 
     if (env_map.get("PYTONGUE_LOG")) |lfn| {
-        logging.log_file_name = try allocator.dupe(u8, lfn);
+        try logging.GlobalLogger.openLogFile(lfn);
     }
 }
 
@@ -21,12 +23,8 @@ pub fn main() !void {
     defer arena.deinit();
     const allocator = arena.allocator();
 
-    try initEnv(allocator);
-    defer {
-        if (logging.log_file_name) |lfn| {
-            allocator.free(lfn);
-        }
-    }
+    try initLogging(allocator);
+    defer logging.GlobalLogger.deinit();
 
     var server = Server{ .baseHandler = &h.baseHandler };
     try server.serve(allocator);

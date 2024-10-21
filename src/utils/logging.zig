@@ -1,9 +1,75 @@
 //! Temporary logging
+//! ATTENTION! WRITTEN WITH AI HELP
 
 const std = @import("std");
 const time = @import("time.zig");
+const f = @import("files.zig");
 
-pub var log_file_name: ?[]const u8 = null;
+pub const Logger = struct {
+    logFileName: ?[]const u8,
+    logFile: ?std.fs.File,
+    mutex: std.Thread.Mutex,
+    allocator: std.mem.Allocator,
+
+    pub fn init(allocator: std.mem.Allocator) Logger {
+        return .{
+            .logFileName = null,
+            .logFile = null,
+            .mutex = std.Thread.Mutex{},
+            .allocator = allocator,
+        };
+    }
+    pub fn deinit(self: *Logger) void {
+        if (self.logFile) |*file| {
+            file.close();
+        }
+        if (self.logFileName) |name| {
+            self.allocator.free(name);
+        }
+    }
+
+    pub fn openLogFile(self: *Logger, filename: []const u8) !void {
+        self.mutex.lock();
+        defer self.mutex.unlock();
+        if (self.logFileName) |name| {
+            self.allocator.free(name);
+        }
+        self.logFileName = try self.allocator.dupe(u8, filename);
+
+        if (self.logFile) |*file| {
+            file.close();
+        }
+        self.logFile = f.openFileAppend(filename);
+    }
+    pub fn log(
+        self: *Logger,
+        comptime level: std.log.Level,
+        comptime scope: @TypeOf(.EnumLiteral),
+        comptime format: []const u8,
+        args: anytype,
+    ) void {
+        self.mutex.lock();
+        defer self.mutex.unlock();
+        if (self.logFile == null or level == .err) {
+            std.log.defaultLog(level, scope, format, args);
+            return;
+        }
+
+        var buffer: [12]u8 = undefined;
+        const timestamp = time.getTimestamp(&buffer);
+        const prefix = if (scope == .default) ": " else "(" ++ @tagName(scope) ++ "): ";
+        const msg = std.fmt.allocPrint(
+            self.allocator,
+            "[{s}] [{s}]{s}" ++ format ++ "\n",
+            .{ timestamp, @tagName(level), prefix } ++ args,
+        ) catch return;
+        defer self.allocator.free(msg);
+
+        self.logFile.?.writeAll(msg) catch unreachable;
+    }
+};
+
+pub var GlobalLogger: Logger = undefined;
 
 pub fn logMessageFn(
     comptime level: std.log.Level,
@@ -11,33 +77,5 @@ pub fn logMessageFn(
     comptime format: []const u8,
     args: anytype,
 ) void {
-    if (log_file_name == null) {
-        std.log.defaultLog(level, scope, format, args);
-        return;
-    }
-
-    var buffer: [12]u8 = undefined;
-    const timestamp = time.getTimestamp(&buffer);
-
-    const prefix = if (scope == .default) ": " else "(" ++ @tagName(scope) ++ "): ";
-    const msg = std.fmt.allocPrint(
-        std.heap.page_allocator,
-        "[{s}] [{s}]{s}" ++ format ++ "\n",
-        .{ timestamp, @tagName(level), prefix } ++ args,
-    ) catch return;
-    defer std.heap.page_allocator.free(msg);
-
-    var log_file = openFile(log_file_name.?);
-    log_file.writeAll(msg) catch unreachable;
-    log_file.close();
-}
-
-pub fn openFile(filename: []const u8) std.fs.File {
-    var log_file = std.fs.openFileAbsolute(
-        filename,
-        .{ .mode = .write_only },
-    ) catch unreachable;
-    const stat = log_file.stat() catch unreachable;
-    log_file.seekTo(stat.size) catch unreachable;
-    return log_file;
+    GlobalLogger.log(level, scope, format, args);
 }
