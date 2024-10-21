@@ -54,13 +54,3 @@ class TestServerLifecycle:
         response_parsed = json.loads(response)
         assert response_parsed["error"] is not None
         assert response_parsed["id"] is None
-
-    # def test_invalid_header(self):
-    #     self.server.stdin.write("invalid header\r\n\r\n".encode())
-    #     self.server.stdin.flush()
-    #     response = self.server.stdout.readlines()
-    #     data = b"".join(response).decode()
-    #     raise Exception(data)
-    # response_parsed = json.loads(response)
-    # assert response_parsed["error"] is not None
-    # assert response_parsed["id"] is None
