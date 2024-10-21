@@ -1,6 +1,7 @@
 const std = @import("std");
 const StateManager = @import("state.zig").StateManager;
 const Handler = @import("handlers.zig").Handler;
+const ec = @import("../lsp_specs/error_codes.zig");
 const MAX_HEADER_SIZE = 256;
 
 pub const Server = struct {
@@ -82,8 +83,9 @@ pub const Server = struct {
         try self.stateManager.startServer();
         while (self.stateManager.shouldBeRunning()) {
             const request = self.parseRequest(allocator) catch |err| {
-                // TODO: how to return error to client?
                 std.log.debug("server failed to parse request: {any}", .{err});
+                const e = self.handler.makeError(ec.ParseError, null, "Request parsing failed");
+                self.sendResponse(e);
                 continue;
             };
             if (request.len == 0) {
