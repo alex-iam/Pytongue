@@ -9,3 +9,4 @@ logs
 .env
 .pytest-cache
 __pycache__/
+.idea

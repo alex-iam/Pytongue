@@ -23,6 +23,7 @@ pub const Server = struct {
         var contentLength: usize = 0;
         if (std.mem.startsWith(u8, header, "Content-Length: ")) {
             contentLength = try std.fmt.parseInt(usize, header[16..], 10);
+            contentLength = try std.fmt.parseInt(usize, header[16..], 10);
         }
         // Ignore the empty line
         _ = try std.io.getStdIn().reader().skipUntilDelimiterOrEof('\n');
@@ -33,7 +34,7 @@ pub const Server = struct {
         if (bytesRead != contentLength) {
             return error.UnexpectedEOF;
         }
-        std.log.debug("server parseRequest {s}", .{content});
+        std.log.debug("server finished parsing", .{});
         return try allocator.dupe(u8, content);
     }
 

@@ -6,6 +6,7 @@ const ec = @import("../lsp_specs/error_codes.zig");
 const p = @import("../lsp_specs/params.zig");
 const t = @import("../lsp_specs/lsp_types.zig");
 const e = @import("../lsp_specs/enums.zig");
+const j = @import("../utils/json.zig");
 
 pub fn makeResponse(response: anytype, allocator: std.mem.Allocator) []const u8 {
     var strResponse = std.ArrayList(u8).init(allocator);
@@ -14,7 +15,7 @@ pub fn makeResponse(response: anytype, allocator: std.mem.Allocator) []const u8 
     return strResponse.toOwnedSlice() catch unreachable;
 }
 
-pub fn makeError(code: i32, id: t.IntOrString, message: []const u8, allocator: std.mem.Allocator) []const u8 {
+pub fn makeError(code: i32, id: ?t.IntOrString, message: []const u8, allocator: std.mem.Allocator) []const u8 {
     return makeResponse(
         m.ResponseMessage{
             .id = id,
@@ -60,34 +61,35 @@ pub fn handleRequest(
             },
         }
     } else { // not found in enum
-
         return makeError(ec.MethodNotFound, parsedId, "Unknown method", allocator);
     }
 }
 
 pub fn baseHandler(stateManager: *StateManager, allocator: std.mem.Allocator, request: []const u8) ?[]const u8 {
-    var response: m.ResponseMessage = undefined;
-    var stream = std.io.fixedBufferStream(request);
-    var jr = std.json.reader(allocator, stream.reader());
-    var parsedRequest = std.json.Value.jsonParse(
+    var parsedRequest = j.parseValue(
         allocator,
-        &jr,
-        .{ .max_value_len = request.len },
+        request,
     ) catch |err| {
         std.log.debug("{any}", .{err});
-        response = m.ResponseMessage{
-            .id = null,
-            .@"error" = m.ResponseError{
-                .code = ec.ParseError,
-                .message = "Request parsing failed",
-            },
-        };
-        return makeResponse(response, allocator);
+        return makeError(ec.ParseError, null, "Request parsing failed", allocator);
     };
     // RequestMessage
     if (parsedRequest.object.get("id")) |id| {
         return handleRequest(id, parsedRequest, stateManager, allocator);
     } else { // NotificationMessage
+        if (std.meta.stringToEnum(
+            e.NotificationMethod,
+            parsedRequest.object.get("method").?.string,
+        )) |method| {
+            switch (method) {
+                e.NotificationMethod.exit => {
+                    stateManager.exitServer() catch unreachable; // TODO return error
+                },
+                else => {
+                    std.log.debug("Unknown notification method", .{});
+                },
+            }
+        }
         return null;
     }
 }
