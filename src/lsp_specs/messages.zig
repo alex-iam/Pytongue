@@ -20,7 +20,7 @@ pub const NotificationMessage = struct {
 pub const ResponseError = struct {
     code: i32,
     message: []const u8,
-    data: ?struct {} = null, // actual type types.LSPAny
+    data: ?types.LSPAny = null,
 };
 
 pub const ResponseMessage = struct {
