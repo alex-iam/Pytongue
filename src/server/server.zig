@@ -23,7 +23,6 @@ pub const Server = struct {
         var contentLength: usize = 0;
         if (std.mem.startsWith(u8, header, "Content-Length: ")) {
             contentLength = try std.fmt.parseInt(usize, header[16..], 10);
-            contentLength = try std.fmt.parseInt(usize, header[16..], 10);
         }
         // Ignore the empty line
         _ = try std.io.getStdIn().reader().skipUntilDelimiterOrEof('\n');
