@@ -56,8 +56,9 @@ pub fn handleRequest(
                 stateManager.initServer() catch unreachable; // TODO return error
                 return makeResponse(response, allocator);
             },
-            else => {
-                return makeError(ec.MethodNotFound, parsedId, "Unknown method", allocator);
+            e.RequestMethod.shutdown => {
+                stateManager.shutdownServer() catch unreachable; // TODO return error
+                return makeResponse(m.ResponseMessage{ .id = parsedId, .result = null }, allocator);
             },
         }
     } else { // not found in enum
@@ -83,12 +84,14 @@ pub fn baseHandler(stateManager: *StateManager, allocator: std.mem.Allocator, re
         )) |method| {
             switch (method) {
                 e.NotificationMethod.exit => {
-                    stateManager.exitServer() catch unreachable; // TODO return error
+                    stateManager.exitServer() catch {
+                        std.process.exit(1);
+                    };
                 },
-                else => {
-                    std.log.debug("Unknown notification method", .{});
-                },
+                e.NotificationMethod.initialized => {},
             }
+        } else {
+            return makeError(ec.MethodNotFound, null, "Unknown method", allocator);
         }
         return null;
     }
