@@ -1,7 +1,9 @@
-pub const MessageMethod = enum {
+pub const RequestMethod = enum {
     initialize,
-    initialized,
     shutdown,
+};
+pub const NotificationMethod = enum {
+    initialized,
     exit,
 };
 pub const TraceValue = enum {

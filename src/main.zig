@@ -1,7 +1,7 @@
 const Server = @import("server/server.zig").Server;
 const std = @import("std");
 const logging = @import("utils/logging.zig");
-const h = @import("handlers.zig");
+const h = @import("server/handlers.zig");
 
 pub const std_options = .{
     .logFn = logging.logMessageFn,

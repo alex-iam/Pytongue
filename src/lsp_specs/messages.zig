@@ -8,13 +8,13 @@ pub const Message = struct {
 pub const RequestMessage = struct {
     jsonrpc: []const u8 = "2.0",
     id: types.IntOrString,
-    method: e.MessageMethod,
+    method: e.RequestMethod,
     params: ?types.ObjectOrArray = null,
 };
 
 pub const NotificationMessage = struct {
     jsonrpc: []const u8 = "2.0",
-    method: e.MessageMethod,
+    method: e.RequestMethod,
     params: ?types.ObjectOrArray = null,
 };
 

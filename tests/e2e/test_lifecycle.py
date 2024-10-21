@@ -19,10 +19,7 @@ class TestServerLifecycle:
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            env=dict(
-                os.environ,
-                PYTONGUE_LOG="/home/alex/Documents/code/zig/pytongue/logs/all.log",
-            ),
+            env=os.environ.copy(),
         )
         time.sleep(1)
 
