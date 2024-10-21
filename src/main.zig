@@ -1,7 +1,8 @@
 const Server = @import("server/server.zig").Server;
 const std = @import("std");
 const logging = @import("utils/logging.zig");
-const h = @import("server/handlers.zig");
+const Handler = @import("server/handlers.zig").Handler;
+const StateManager = @import("server/state.zig").StateManager;
 
 pub const std_options = .{
     .logFn = logging.logMessageFn,
@@ -26,6 +27,9 @@ pub fn main() !void {
     try initLogging(allocator);
     defer logging.GlobalLogger.deinit();
 
-    var server = Server{ .baseHandler = &h.baseHandler };
+    var stateManager = StateManager{};
+    var handler = Handler.init(&stateManager, allocator);
+
+    var server = Server{ .handler = &handler, .stateManager = &stateManager };
     try server.serve(allocator);
 }

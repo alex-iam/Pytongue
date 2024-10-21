@@ -1,11 +1,11 @@
 const std = @import("std");
 const StateManager = @import("state.zig").StateManager;
+const Handler = @import("handlers.zig").Handler;
 const MAX_HEADER_SIZE = 256;
 
 pub const Server = struct {
-    stateManager: StateManager = .{},
-    baseHandler: *const fn (*StateManager, std.mem.Allocator, []const u8) ?[]const u8,
-
+    stateManager: *StateManager,
+    handler: *Handler,
     fn parseRequest(_: *Server, allocator: std.mem.Allocator) ![]const u8 {
         std.log.debug("server parseRequest", .{});
 
@@ -90,7 +90,7 @@ pub const Server = struct {
                 std.log.debug("server serve empty request", .{});
                 continue;
             }
-            if (self.baseHandler(&self.stateManager, allocator, request)) |response| {
+            if (self.handler.handle(request)) |response| {
                 self.sendResponse(response);
             }
         }
