@@ -1,6 +1,6 @@
 const Server = @import("server.zig").Server;
 const std = @import("std");
-const StateManager = @import("state.zig").StateManager;
+const s = @import("state.zig");
 const m = @import("../lsp_specs/messages.zig");
 const ec = @import("../lsp_specs/error_codes.zig");
 const p = @import("../lsp_specs/params.zig");
@@ -31,7 +31,7 @@ pub fn makeError(code: i32, id: ?t.IntOrString, message: []const u8, allocator: 
 pub fn handleRequest(
     id: std.json.Value,
     parsedRequest: std.json.Value,
-    stateManager: *StateManager,
+    stateManager: *s.StateManager,
     allocator: std.mem.Allocator,
 ) []const u8 {
     var parsedId: t.IntOrString = undefined;
@@ -66,7 +66,7 @@ pub fn handleRequest(
     }
 }
 
-pub fn baseHandler(stateManager: *StateManager, allocator: std.mem.Allocator, request: []const u8) ?[]const u8 {
+pub fn baseHandler(stateManager: *s.StateManager, allocator: std.mem.Allocator, request: []const u8) ?[]const u8 {
     var parsedRequest = j.parseValue(
         allocator,
         request,
@@ -74,8 +74,14 @@ pub fn baseHandler(stateManager: *StateManager, allocator: std.mem.Allocator, re
         std.log.debug("{any}", .{err});
         return makeError(ec.ParseError, null, "Request parsing failed", allocator);
     };
-    // TODO return InvalidMethod if status=shutdown
-    // TODO return ServerNotInitialized if status=started
+    // TODO pass ID's
+    if (stateManager.state == s.ServerState.Shutdown) {
+        return makeError(ec.InvalidRequest, null, "Server is shutdown", allocator);
+    }
+    // AND method != initialize
+    // if (stateManager.state == s.ServerState.Started) {
+    //     return makeError(ec.ServerNotInitialized, null, "Server is not initialized", allocator);
+    // }
     // RequestMessage
     if (parsedRequest.object.get("id")) |id| {
         return handleRequest(id, parsedRequest, stateManager, allocator);
