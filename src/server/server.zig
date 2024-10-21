@@ -81,8 +81,11 @@ pub const Server = struct {
         std.log.debug("server serve", .{});
         try self.stateManager.startServer();
         while (self.stateManager.shouldBeRunning()) {
-            // TODO: don't crash on invalid requests
-            const request = try self.parseRequest(allocator);
+            const request = self.parseRequest(allocator) catch |err| {
+                // TODO: how to return error to client?
+                std.log.debug("server failed to parse request: {any}", .{err});
+                continue;
+            };
             if (request.len == 0) {
                 std.log.debug("server serve empty request", .{});
                 continue;

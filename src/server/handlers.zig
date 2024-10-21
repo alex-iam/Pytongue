@@ -53,11 +53,15 @@ pub fn handleRequest(
                         },
                     },
                 };
-                stateManager.initServer() catch unreachable; // TODO return error
+                stateManager.initServer() catch {
+                    return makeError(ec.InvalidRequest, parsedId, "Method not allowed", allocator);
+                };
                 return makeResponse(response, allocator);
             },
             e.RequestMethod.shutdown => {
-                stateManager.shutdownServer() catch unreachable; // TODO return error
+                stateManager.shutdownServer() catch {
+                    return makeError(ec.InvalidRequest, parsedId, "Method not allowed", allocator);
+                };
                 return makeResponse(m.ResponseMessage{ .id = parsedId, .result = null }, allocator);
             },
         }
