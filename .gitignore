@@ -7,3 +7,5 @@ zig-out/
 /docgen_tmp/
 logs
 .env
+.pytest-cache
+__pycache__/

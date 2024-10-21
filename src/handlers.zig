@@ -4,6 +4,7 @@ const StateManager = @import("server/state.zig").StateManager;
 const m = @import("lsp_specs/messages.zig");
 const ec = @import("lsp_specs/error_codes.zig");
 const p = @import("lsp_specs/params.zig");
+const t = @import("lsp_specs/lsp_types.zig");
 
 pub fn makeResponse(response: anytype, allocator: std.mem.Allocator) []const u8 {
     var strResponse = std.ArrayList(u8).init(allocator);
@@ -33,9 +34,15 @@ pub fn baseHandler(stateManager: *StateManager, allocator: std.mem.Allocator, re
     };
     // RequestMessage
     if (parsedRequest.object.get("id")) |id| {
+        var parsedId: ?t.IntOrString = null;
+        switch (id) {
+            .integer => |v| parsedId = t.IntOrString{ .integer = v },
+            .string => |v| parsedId = t.IntOrString{ .string = v },
+            else => {},
+        }
         if (std.mem.eql(u8, parsedRequest.object.get("method").?.string, "initialize")) {
             response = m.ResponseMessage{
-                .id = id.string,
+                .id = parsedId,
                 .result = p.InitializeResult{
                     .capabilities = .{},
                     .serverInfo = .{
@@ -47,8 +54,9 @@ pub fn baseHandler(stateManager: *StateManager, allocator: std.mem.Allocator, re
             stateManager.initServer() catch unreachable; // TODO return error
             return makeResponse(response, allocator);
         } else { // not initialize
+
             response = m.ResponseMessage{
-                .id = id.string,
+                .id = parsedId,
                 .@"error" = m.ResponseError{
                     .code = ec.MethodNotFound,
                     .message = "Unknown method",
