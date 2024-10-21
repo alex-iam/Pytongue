@@ -74,6 +74,8 @@ pub fn baseHandler(stateManager: *StateManager, allocator: std.mem.Allocator, re
         std.log.debug("{any}", .{err});
         return makeError(ec.ParseError, null, "Request parsing failed", allocator);
     };
+    // TODO return InvalidMethod if status=shutdown
+    // TODO return ServerNotInitialized if status=started
     // RequestMessage
     if (parsedRequest.object.get("id")) |id| {
         return handleRequest(id, parsedRequest, stateManager, allocator);
