@@ -1,5 +1,6 @@
 const types = @import("lsp_types.zig");
 const p = @import("params.zig");
+const e = @import("enums.zig");
 pub const Message = struct {
     jsonrpc: []const u8 = "2.0",
 };
@@ -7,13 +8,13 @@ pub const Message = struct {
 pub const RequestMessage = struct {
     jsonrpc: []const u8 = "2.0",
     id: types.IntOrString,
-    method: []const u8 = "",
+    method: e.MessageMethod,
     params: ?types.ObjectOrArray = null,
 };
 
 pub const NotificationMessage = struct {
     jsonrpc: []const u8 = "2.0",
-    method: []const u8 = "",
+    method: e.MessageMethod,
     params: ?types.ObjectOrArray = null,
 };
 

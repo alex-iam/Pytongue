@@ -1,3 +1,9 @@
+pub const MessageMethod = enum {
+    initialize,
+    initialized,
+    shutdown,
+    exit,
+};
 pub const TraceValue = enum {
     off,
     messages,
