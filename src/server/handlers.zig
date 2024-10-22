@@ -6,17 +6,20 @@ const p = @import("../lsp_specs/params.zig");
 const t = @import("../lsp_specs/lsp_types.zig");
 const e = @import("../lsp_specs/enums.zig");
 const j = @import("../utils/json.zig");
+const Config = @import("../utils/config.zig").Config;
 
 pub const Handler = struct {
     stateManager: *s.StateManager,
     allocator: std.mem.Allocator,
     id: ?std.json.Value = undefined,
     parsedRequest: std.json.Value = undefined,
+    config: *Config,
 
-    pub fn init(stateManager: *s.StateManager, allocator: std.mem.Allocator) Handler {
+    pub fn init(stateManager: *s.StateManager, allocator: std.mem.Allocator, config: *Config) Handler {
         return Handler{
             .stateManager = stateManager,
             .allocator = allocator,
+            .config = config,
         };
     }
 
@@ -52,8 +55,8 @@ pub const Handler = struct {
                         .result = p.InitializeResult{
                             .capabilities = .{},
                             .serverInfo = .{
-                                .name = "Pytongue",
-                                .version = "0.1.0",
+                                .name = self.config.projectName,
+                                .version = self.config.projectVersion,
                             },
                         },
                     };

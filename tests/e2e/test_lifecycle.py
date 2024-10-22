@@ -15,6 +15,9 @@ class TestServerLifecycle:
         }
         cls.bin = os.getenv("PYTONGUE_TEST_BINARY", "./zig-out/bin/pytongue")
 
+        with open("version") as f:
+            cls.version = f.read().strip()
+
         cls.server = subprocess.Popen(
             [cls.bin],
             stdin=subprocess.PIPE,
@@ -48,6 +51,7 @@ class TestServerLifecycle:
         response_parsed = json.loads(response)
         assert response_parsed["error"] is None
         assert response_parsed["id"] == self.request_data["id"]
+        assert response_parsed["result"]["serverInfo"]["version"] == self.version
 
     def test_invalid_request(self):
         self.send_request("invalid request")

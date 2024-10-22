@@ -3,6 +3,8 @@ const std = @import("std");
 const logging = @import("utils/logging.zig");
 const Handler = @import("server/handlers.zig").Handler;
 const StateManager = @import("server/state.zig").StateManager;
+const Config = @import("utils/config.zig").Config;
+const f = @import("utils/files.zig");
 
 pub const std_options = .{
     .logFn = logging.logMessageFn,
@@ -28,7 +30,12 @@ pub fn main() !void {
     defer logging.GlobalLogger.deinit();
 
     var stateManager = StateManager{};
-    var handler = Handler.init(&stateManager, allocator);
+    // TODO get version from version file
+    var config = Config{
+        .projectName = "Pytongue",
+        .projectVersion = try f.readEntireFile(allocator, "version"),
+    };
+    var handler = Handler.init(&stateManager, allocator, &config);
 
     var server = Server{ .handler = &handler, .stateManager = &stateManager };
     try server.serve(allocator);
