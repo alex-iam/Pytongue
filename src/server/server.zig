@@ -84,7 +84,7 @@ pub const Server = struct {
         while (self.stateManager.shouldBeRunning()) {
             const request = self.parseRequest(allocator) catch |err| {
                 std.log.debug("server failed to parse request: {any}", .{err});
-                const e = self.handler.makeError(ec.ParseError, null, "Request parsing failed");
+                const e = self.handler.makeError(ec.ParseError, "Request parsing failed");
                 self.sendResponse(e);
                 continue;
             };

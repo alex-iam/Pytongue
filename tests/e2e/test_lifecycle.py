@@ -45,6 +45,13 @@ class TestServerLifecycle:
         self.server.stdout.readline()  # Empty line
         return self.server.stdout.read(content_length).decode()
 
+    def test_invalid_request(self):
+        self.send_request("invalid request")
+        response = self.read_response()
+        response_parsed = json.loads(response)
+        assert response_parsed["error"] is not None
+        assert response_parsed["id"] is None
+
     def test_initialize(self):
         self.send_request(json.dumps(self.request_data))
         response = self.read_response()
@@ -52,13 +59,6 @@ class TestServerLifecycle:
         assert response_parsed["error"] is None
         assert response_parsed["id"] == self.request_data["id"]
         assert response_parsed["result"]["serverInfo"]["version"] == self.version
-
-    def test_invalid_request(self):
-        self.send_request("invalid request")
-        response = self.read_response()
-        response_parsed = json.loads(response)
-        assert response_parsed["error"] is not None
-        assert response_parsed["id"] is None
 
     def test_invalid_header(self):
         self.server.stdin.write("invalid header\r\n\r\n".encode())
