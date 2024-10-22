@@ -17,7 +17,7 @@ Use justfile as a reference.
 
 ## Versioning
 
-As there are multiple languages used in the project, with different build tools, and Zig build system is very unstable, a simple approach is used
+As there are multiple languages used in the project, with different build tools, and Zig build system is very unstable, a simple approach is used.
 
 The current version format is stored in `version` file in the root of the project. It is in the semver (https://semver.org/) format.
 
