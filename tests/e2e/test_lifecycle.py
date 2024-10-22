@@ -13,9 +13,10 @@ class TestServerLifecycle:
             "method": "initialize",
             "params": None,
         }
+        cls.bin = os.getenv("PYTONGUE_TEST_BINARY", "./zig-out/bin/pytongue")
 
         cls.server = subprocess.Popen(
-            ["./zig-out/bin/pytongue"],
+            [cls.bin],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
