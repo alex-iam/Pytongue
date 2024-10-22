@@ -1,6 +1,13 @@
 # Pytongue
 A project that aims to develop an LSP server for Python in Zig.
 
+## Current state of the development:
+
+- [x] Basic LSP server with generally compliant lifecycle
+- [ ] More checks for invalid methods, handler refactoring
+- [ ] Basic server capabilities in responses, match client capabilities
+- [ ] Start implementing actual language server features
+
 ## Building, running, testing
 
 ### Prerequisites:
