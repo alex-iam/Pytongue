@@ -3,7 +3,7 @@ const std = @import("std");
 // Although this function looks imperative, note that its job is to
 // declaratively construct a build graph that will be executed by an external
 // runner.
-pub fn build(b: *std.Build) void {
+pub fn build(b: *std.Build) !void {
     // Standard target options allows the person running `zig build` to choose
     // what target to build for. Here we do not override the defaults, which
     // means any target is allowed, and the default is native. Other options
@@ -15,12 +15,25 @@ pub fn build(b: *std.Build) void {
     // set a preferred release mode, allowing the user to decide how to optimize.
     const optimize = b.standardOptimizeOption(.{});
 
+    const version_contents = try std.fs.cwd().readFileAlloc(
+        b.allocator,
+        "version",
+        32,
+    );
+    defer b.allocator.free(version_contents);
+    const version = std.mem.trim(u8, version_contents, &std.ascii.whitespace);
+
+    const exe_options = b.addOptions();
+    exe_options.addOption([]const u8, "version", version);
+
     const exe = b.addExecutable(.{
         .name = "pytongue",
         .root_source_file = b.path("src/main.zig"),
         .target = target,
         .optimize = optimize,
     });
+
+    exe.root_module.addOptions("build_options", exe_options);
 
     // This declares intent for the executable to be installed into the
     // standard location when the user invokes the "install" step (the default

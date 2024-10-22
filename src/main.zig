@@ -4,7 +4,7 @@ const logging = @import("utils/logging.zig");
 const Handler = @import("server/handlers.zig").Handler;
 const StateManager = @import("server/state.zig").StateManager;
 const Config = @import("utils/config.zig").Config;
-const f = @import("utils/files.zig");
+const build_options = @import("build_options");
 
 pub const std_options = .{
     .logFn = logging.logMessageFn,
@@ -32,7 +32,7 @@ pub fn main() !void {
     var stateManager = StateManager{};
     var config = Config{
         .projectName = "Pytongue",
-        .projectVersion = try f.readEntireFile(allocator, "version"),
+        .projectVersion = build_options.version,
     };
     var handler = Handler.init(&stateManager, allocator, &config);
 
