@@ -9,6 +9,7 @@ on:
 env:
   PYTONGUE_LOG: /tmp/pytongue.log
   BUILD_DIR: zig-out/bin
+  FORCE_COLOR: 1
 
 jobs:
   build-and-test:
