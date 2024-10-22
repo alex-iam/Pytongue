@@ -30,12 +30,13 @@ pub fn main() !void {
     defer logging.GlobalLogger.deinit();
 
     var stateManager = StateManager{};
-    // TODO get version from version file
     var config = Config{
         .projectName = "Pytongue",
         .projectVersion = try f.readEntireFile(allocator, "version"),
     };
     var handler = Handler.init(&stateManager, allocator, &config);
+
+    defer allocator.free(config.projectVersion);
 
     var server = Server{ .handler = &handler, .stateManager = &stateManager };
     try server.serve(allocator);
