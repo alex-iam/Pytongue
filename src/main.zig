@@ -23,11 +23,10 @@ pub fn initLogging(allocator: std.mem.Allocator) !void {
 
 pub fn main() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    defer arena.deinit();
+
     const allocator = arena.allocator();
 
     try initLogging(allocator);
-    defer logging.GlobalLogger.deinit();
 
     var stateManager = StateManager{};
     var config = Config{
@@ -36,7 +35,10 @@ pub fn main() !void {
     };
     var handler = Handler.init(&stateManager, allocator, &config);
 
-    defer allocator.free(config.projectVersion);
+    defer {
+        logging.GlobalLogger.deinit();
+        arena.deinit();
+    }
 
     var server = Server{ .handler = &handler, .stateManager = &stateManager };
     try server.serve(allocator);

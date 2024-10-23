@@ -8,12 +8,22 @@ const e = @import("../lsp_specs/enums.zig");
 const j = @import("../utils/json.zig");
 const Config = @import("../utils/config.zig").Config;
 
+pub const ParsedRequestInfo = struct {
+    id: ?t.IntOrString = undefined,
+    request: std.json.Value = undefined,
+    notificationMethod: ?e.NotificationMethod = undefined,
+    requestMethod: ?e.RequestMethod = undefined,
+
+    pub inline fn isRequest(self: ParsedRequestInfo) bool {
+        return self.id != null and self.requestMethod != null and self.notificationMethod == null;
+    }
+};
+
 pub const Handler = struct {
     stateManager: *s.StateManager,
     allocator: std.mem.Allocator,
-    parsedId: ?t.IntOrString = undefined,
-    parsedRequest: std.json.Value = undefined,
     config: *Config,
+    parsedInfo: ParsedRequestInfo = undefined,
 
     pub fn init(stateManager: *s.StateManager, allocator: std.mem.Allocator, config: *Config) Handler {
         return Handler{
@@ -32,7 +42,7 @@ pub const Handler = struct {
 
     pub fn makeError(self: *Handler, code: i32, message: []const u8) []const u8 {
         return self.makeResponse(m.ResponseMessage{
-            .id = self.parsedId,
+            .id = self.parsedInfo.id,
             .@"error" = m.ResponseError{
                 .code = code,
                 .message = message,
@@ -41,11 +51,15 @@ pub const Handler = struct {
     }
 
     pub fn handleRequest(self: *Handler) []const u8 {
-        if (std.meta.stringToEnum(e.RequestMethod, self.parsedRequest.object.get("method").?.string)) |method| {
+        if (self.parsedInfo.requestMethod) |method| {
+            std.log.debug("received a <request> with method {s}", .{@tagName(method)});
             switch (method) {
                 e.RequestMethod.initialize => {
+                    self.stateManager.initServer() catch {
+                        return self.makeError(ec.InvalidRequest, "Method not allowed");
+                    };
                     const response = m.ResponseMessage{
-                        .id = self.parsedId,
+                        .id = self.parsedInfo.id,
                         .result = p.InitializeResult{
                             .capabilities = .{},
                             .serverInfo = .{
@@ -54,9 +68,6 @@ pub const Handler = struct {
                             },
                         },
                     };
-                    self.stateManager.initServer() catch {
-                        return self.makeError(ec.InvalidRequest, "Method not allowed");
-                    };
                     return self.makeResponse(response);
                 },
                 e.RequestMethod.shutdown => {
@@ -64,7 +75,7 @@ pub const Handler = struct {
                         return self.makeError(ec.InvalidRequest, "Method not allowed");
                     };
                     std.log.debug("server shutting down", .{});
-                    return self.makeResponse(m.ResponseMessage{ .id = self.parsedId, .result = null });
+                    return self.makeResponse(m.ResponseMessage{ .id = self.parsedInfo.id, .result = null });
                 },
             }
         } else { // not found in enum
@@ -72,56 +83,62 @@ pub const Handler = struct {
         }
     }
 
-    pub fn parseId(self: *Handler, id: ?std.json.Value) void {
-        self.parsedId = null;
+    pub fn parseId(_: *Handler, id: ?std.json.Value) ?t.IntOrString {
         if (id) |id_v| {
             switch (id_v) {
-                .integer => |v| self.parsedId = t.IntOrString{ .integer = v },
-                .string => |v| self.parsedId = t.IntOrString{ .string = v },
+                .integer => |v| return t.IntOrString{ .integer = v },
+                .string => |v| return t.IntOrString{ .string = v },
                 else => {},
             }
         }
+        return null;
+    }
+
+    pub fn parseRequst(self: *Handler, request: []const u8) !void {
+        var parsedRequest = try j.parseValue(self.allocator, request);
+        self.parsedInfo = ParsedRequestInfo{
+            .id = self.parseId(parsedRequest.object.get("id")),
+            .request = parsedRequest,
+            .notificationMethod = std.meta.stringToEnum(
+                e.NotificationMethod,
+                parsedRequest.object.get("method").?.string,
+            ),
+            .requestMethod = std.meta.stringToEnum(
+                e.RequestMethod,
+                parsedRequest.object.get("method").?.string,
+            ),
+        };
     }
 
     pub fn handle(self: *Handler, request: []const u8) ?[]const u8 {
-        defer {
-            self.parsedId = null;
-            self.parsedRequest = undefined;
-        }
-        self.parsedRequest = j.parseValue(
-            self.allocator,
-            request,
-        ) catch |err| {
+        self.parseRequst(request) catch |err| {
             std.log.debug("Request parsing failed: {any}", .{err});
             return self.makeError(ec.ParseError, "Request parsing failed");
         };
-        if (self.stateManager.state == s.ServerState.Shutdown) {
-            return self.makeError(ec.InvalidRequest, "Server is shutdown");
+        defer {
+            self.parsedInfo = undefined;
         }
-
-        self.parseId(self.parsedRequest.object.get("id"));
-
+        // if (self.stateManager.state == s.ServerState.Shutdown) {
+        //     return self.makeError(ec.InvalidRequest, "Server is shutdown");
+        // }
         // RequestMessage
-        if (self.parsedId) |_| {
-            std.log.debug("received a request", .{});
+        if (self.parsedInfo.isRequest()) {
             return self.handleRequest();
         } else { // NotificationMessage
-            if (std.meta.stringToEnum(
-                e.NotificationMethod,
-                self.parsedRequest.object.get("method").?.string,
-            )) |method| {
-                std.log.debug("received a notification", .{});
+            if (self.parsedInfo.notificationMethod) |method| {
+                std.log.debug("received a <notification> with method {s}", .{@tagName(method)});
                 switch (method) {
                     e.NotificationMethod.exit => {
-                        std.log.debug("server exiting gracefully", .{});
                         self.stateManager.exitServer() catch {
                             std.log.debug("server exiting unexpectedly", .{});
                             std.process.exit(1);
                         };
+                        std.log.debug("server exiting gracefully", .{});
                     },
                     e.NotificationMethod.initialized => {},
                 }
             } else {
+                std.log.debug("A notification without a method", .{});
                 return self.makeError(ec.MethodNotFound, "Unknown method");
             }
             return null;

@@ -81,12 +81,13 @@ def test_invalid_method_notification(
 
 def test_request_after_shutdown(
     send_request,
-    initialized_notification,
+    simple_initialize_request,
     read_response,
     shutdown,
 ):
     shutdown()
-    send_request(json.dumps(initialized_notification))
+    # TODO send a different request after shutdown
+    send_request(json.dumps(simple_initialize_request))
     response = read_response()
     response_parsed = json.loads(response)
     assert response_parsed["error"] is not None
