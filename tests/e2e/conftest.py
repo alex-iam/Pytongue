@@ -86,7 +86,7 @@ def server(binary):
     yield server
     if server.poll() is None:
         server.terminate()
-        server.wait()
+        server.wait(2)
 
 
 @pytest.fixture

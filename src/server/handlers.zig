@@ -15,7 +15,7 @@ pub const ParsedRequestInfo = struct {
     requestMethod: ?e.RequestMethod = undefined,
 
     pub inline fn isRequest(self: ParsedRequestInfo) bool {
-        return self.id != null and self.requestMethod != null and self.notificationMethod == null;
+        return self.id != null or (self.requestMethod != null and self.notificationMethod == null);
     }
 };
 
@@ -110,6 +110,25 @@ pub const Handler = struct {
         };
     }
 
+    pub fn validateOnShutdown(self: *Handler) !void {
+        if (self.stateManager.state == s.ServerState.Shutdown and self.parsedInfo.notificationMethod != e.NotificationMethod.exit) {
+            return error.ServerShutdown;
+        }
+    }
+
+    pub fn validateOnStarted(self: *Handler) !void {
+        if (self.stateManager.state == s.ServerState.Started) {
+            if (self.parsedInfo.requestMethod != e.RequestMethod.initialize and self.parsedInfo.notificationMethod != e.NotificationMethod.exit) {
+                return error.ServerNotInitialized;
+            }
+        }
+    }
+
+    pub fn validate(self: *Handler) !void {
+        try self.validateOnShutdown();
+        try self.validateOnStarted();
+    }
+
     pub fn handle(self: *Handler, request: []const u8) ?[]const u8 {
         self.parseRequst(request) catch |err| {
             std.log.debug("Request parsing failed: {any}", .{err});
@@ -118,9 +137,16 @@ pub const Handler = struct {
         defer {
             self.parsedInfo = undefined;
         }
-        // if (self.stateManager.state == s.ServerState.Shutdown) {
-        //     return self.makeError(ec.InvalidRequest, "Server is shutdown");
-        // }
+        self.validate() catch |err| switch (err) {
+            error.ServerShutdown => return self.makeError(
+                ec.InvalidRequest,
+                "Server is shutdown",
+            ),
+            error.ServerNotInitialized => return self.makeError(
+                ec.InvalidRequest,
+                "Server is not initialized",
+            ),
+        };
         // RequestMessage
         if (self.parsedInfo.isRequest()) {
             return self.handleRequest();
@@ -131,6 +157,7 @@ pub const Handler = struct {
                     e.NotificationMethod.exit => {
                         self.stateManager.exitServer() catch {
                             std.log.debug("server exiting unexpectedly", .{});
+                            // TODO: think of better way to exit so that memory is freed
                             std.process.exit(1);
                         };
                         std.log.debug("server exiting gracefully", .{});
@@ -139,7 +166,6 @@ pub const Handler = struct {
                 }
             } else {
                 std.log.debug("A notification without a method", .{});
-                return self.makeError(ec.MethodNotFound, "Unknown method");
             }
             return null;
         }
