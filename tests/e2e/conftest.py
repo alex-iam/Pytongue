@@ -1,4 +1,6 @@
+import json
 import os
+import random
 import subprocess
 
 import pytest
@@ -26,6 +28,53 @@ def simple_initialize_request():
 
 
 @pytest.fixture
+def initialized_notification():
+    return {
+        "jsonrpc": "2.0",
+        "method": "initialized",
+        "params": {},
+    }
+
+
+@pytest.fixture
+def shutdown_request():
+    return {
+        "jsonrpc": "2.0",
+        "id": random.randint(1, 100),
+        "method": "shutdown",
+        "params": None,
+    }
+
+
+@pytest.fixture
+def invalid_method_request():
+    return {
+        "jsonrpc": "2.0",
+        "id": random.randint(1, 100),
+        "method": "invalid_method",
+        "params": None,
+    }
+
+
+@pytest.fixture
+def invalid_method_notification():
+    return {
+        "jsonrpc": "2.0",
+        "method": "invalid_method",
+        "params": None,
+    }
+
+
+@pytest.fixture
+def exit_notification():
+    return {
+        "jsonrpc": "2.0",
+        "method": "exit",
+        "params": None,
+    }
+
+
+@pytest.fixture
 def server(binary):
     server = subprocess.Popen(
         [binary],
@@ -35,9 +84,9 @@ def server(binary):
         env=os.environ.copy(),
     )
     yield server
-
-    server.terminate()
-    server.wait()
+    if server.poll() is None:
+        server.terminate()
+        server.wait()
 
 
 @pytest.fixture
@@ -70,3 +119,22 @@ def read_response(server):
         return server.stdout.read(content_length).decode()
 
     return _read_response
+
+
+@pytest.fixture
+def initialize(send_request, simple_initialize_request, read_response):
+    def _initialize():
+        send_request(json.dumps(simple_initialize_request))
+        read_response()
+
+    return _initialize
+
+
+@pytest.fixture
+def shutdown(send_request, shutdown_request, read_response, initialize):
+    def _shutdown():
+        initialize()
+        send_request(json.dumps(shutdown_request))
+        read_response()
+
+    return _shutdown

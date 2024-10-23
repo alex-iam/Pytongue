@@ -63,6 +63,7 @@ pub const Handler = struct {
                     self.stateManager.shutdownServer() catch {
                         return self.makeError(ec.InvalidRequest, "Method not allowed");
                     };
+                    std.log.debug("server shutting down", .{});
                     return self.makeResponse(m.ResponseMessage{ .id = self.parsedId, .result = null });
                 },
             }
@@ -91,10 +92,9 @@ pub const Handler = struct {
             self.allocator,
             request,
         ) catch |err| {
-            std.log.debug("{any}", .{err});
+            std.log.debug("Request parsing failed: {any}", .{err});
             return self.makeError(ec.ParseError, "Request parsing failed");
         };
-        // TODO pass ID's
         if (self.stateManager.state == s.ServerState.Shutdown) {
             return self.makeError(ec.InvalidRequest, "Server is shutdown");
         }
@@ -103,15 +103,19 @@ pub const Handler = struct {
 
         // RequestMessage
         if (self.parsedId) |_| {
+            std.log.debug("received a request", .{});
             return self.handleRequest();
         } else { // NotificationMessage
             if (std.meta.stringToEnum(
                 e.NotificationMethod,
                 self.parsedRequest.object.get("method").?.string,
             )) |method| {
+                std.log.debug("received a notification", .{});
                 switch (method) {
                     e.NotificationMethod.exit => {
+                        std.log.debug("server exiting gracefully", .{});
                         self.stateManager.exitServer() catch {
+                            std.log.debug("server exiting unexpectedly", .{});
                             std.process.exit(1);
                         };
                     },
