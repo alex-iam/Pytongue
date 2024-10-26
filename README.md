@@ -5,7 +5,7 @@ A project that aims to develop an LSP server for Python in Zig.
 
 - [x] Basic LSP server with generally compliant lifecycle
 - [x] More checks for invalid methods, handler refactoring
-- [ ] Parsing Python
+- [ ] Parsing Python (study whether tree-sitter is the best choice)
 - [ ] Connecting parsing to the server
 
 ## Building, running, testing
