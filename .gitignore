@@ -10,3 +10,4 @@ logs
 .pytest-cache
 __pycache__/
 .idea
+.venv

@@ -13,7 +13,9 @@ A project that aims to develop an LSP server for Python in Zig.
 ### Prerequisites:
  - Zig
  - (recommended, not necessary) just (https://github.com/casey/just)
- - Python (for testing only). Followed by poetry (https://python-poetry.org/)
+ - Python (for testing only). `uv` is used to manage dependencies.
+
+(TODO: measure uv vs pip in github actions)
 
 ### Environment variables:
  - `PYTONGUE_LOG` - an absolute path to a log file. At this point is necessary, as stdout logs confuse server.

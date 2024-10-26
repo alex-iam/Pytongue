@@ -6,7 +6,7 @@ build:
 run:
     zig build run
 test:
-    poetry run pytest tests/e2e
+    uv run pytest tests/e2e
 retest: build test
 
 patch:
