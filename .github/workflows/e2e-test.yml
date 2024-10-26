@@ -1,10 +1,23 @@
+# TODO: Separate build and test steps
+
 name: Build and Test
 
 on:
   push:
     branches: [ "master" ]
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "build.zig"
+      - "build.zig.zon"
   pull_request:
     branches: [ "master" ]
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "build.zig"
+      - "build.zig.zon"
+  workflow_dispatch:
 
 env:
   PYTONGUE_LOG: /tmp/pytongue.log
@@ -39,8 +52,6 @@ jobs:
 
     - name: Run tests
       env:
-        # Assuming the binary name is the same as the project name
-        # Modify the path according to your actual binary location and name
         PYTONGUE_TEST_BINARY: ${{ github.workspace }}/${{ env.BUILD_DIR }}/pytongue
       run: |
         touch ${{ env.PYTONGUE_LOG }}
