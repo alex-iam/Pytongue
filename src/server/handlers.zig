@@ -1,3 +1,20 @@
+// This file is a part of Pytongue.
+// 
+// Copyright (C) 2024 Oleksandr Korzh
+// 
+// Pytongue is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// Pytongue is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with Pytongue. If not, see <https://www.gnu.org/licenses/>.
+
 const std = @import("std");
 const s = @import("state.zig");
 const m = @import("../lsp_specs/messages.zig");
@@ -35,7 +52,6 @@ pub const Handler = struct {
 
     pub fn makeResponse(self: *Handler, response: anytype) []const u8 {
         var strResponse = std.ArrayList(u8).init(self.allocator);
-        // FIXME
         std.json.stringify(response, .{}, strResponse.writer()) catch unreachable;
         return strResponse.toOwnedSlice() catch unreachable;
     }
@@ -147,7 +163,6 @@ pub const Handler = struct {
                 "Server is not initialized",
             ),
         };
-        // RequestMessage
         if (self.parsedInfo.isRequest()) {
             return self.handleRequest();
         } else { // NotificationMessage
@@ -157,7 +172,6 @@ pub const Handler = struct {
                     e.NotificationMethod.exit => {
                         self.stateManager.exitServer() catch {
                             std.log.debug("server exiting unexpectedly", .{});
-                            // TODO: think of better way to exit so that memory is freed
                             std.process.exit(1);
                         };
                         std.log.debug("server exiting gracefully", .{});

@@ -1,3 +1,20 @@
+// This file is a part of Pytongue.
+// 
+// Copyright (C) 2024 Oleksandr Korzh
+// 
+// Pytongue is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// Pytongue is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with Pytongue. If not, see <https://www.gnu.org/licenses/>.
+
 pub const RequestMethod = enum {
     initialize,
     shutdown,
@@ -23,7 +40,6 @@ pub const FailureHandlingKind = enum {
     undo,
 };
 
-// TODO: default supported symbols are File and Array
 pub const SymbolKind = enum { File, Module, Namespace, Package, Class, Method, Property, Field, Constructor, Enum, Interface, Function, Variable, Constant, String, Number, Boolean, Array, Object, Key, Null, EnumMember, Struct, Event, Operator, TypeParameter };
 
 pub const MarkupKind = enum {
@@ -61,7 +77,6 @@ pub const CompletionItemKind = enum {
     Operator,
     TypeParameter,
 };
-// TODO validation
 pub const CodeActionKind = [_][]const u8{ "", "quickfix", "refactor", "refactor.extract", "refactor.inline", "refactor.rewrite", "source", "source.organizeImports", "source.fixAll" };
 
 pub const DiagnosticTag = enum {
