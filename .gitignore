@@ -11,3 +11,4 @@ logs
 __pycache__/
 .idea
 .venv
+.dir-locals.el
