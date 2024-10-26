@@ -1,4 +1,6 @@
-# TODO: Separate build and test steps
+# Decided that for now it's the best to have
+# one job for build and test, might need to review
+# this in the future.
 
 name: Build and Test
 
