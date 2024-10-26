@@ -32,4 +32,4 @@ The current version format is stored in `version` file in the root of the projec
 
 ## License
 
-TBD
+See LICENSE.md
