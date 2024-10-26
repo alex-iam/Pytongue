@@ -6,7 +6,12 @@ from pathlib import Path
 def clean_license_header(file_path):
     with open(file_path, "r", encoding="utf-8") as f:
         lines = f.readlines()
-    cleaned_lines = [line for line in lines if not line.lstrip().startswith("// ")]
+    for i, line in enumerate(lines):
+        if not line.lstrip().startswith("//"):
+            cleaned_lines = lines[i:]
+            break
+    else:
+        cleaned_lines = []
     while cleaned_lines and cleaned_lines[0].strip() == "":
         cleaned_lines.pop(0)
     with open(file_path, "w", encoding="utf-8") as f:
@@ -15,7 +20,7 @@ def clean_license_header(file_path):
 
 def add_license_header(file_path, header_content):
     header_lines = [
-        f"// {line.rstrip()}" if line.strip() else "// "
+        f"// {line.rstrip()}" if line.strip() else "//"
         for line in header_content.splitlines()
     ]
     formatted_header = "\n".join(header_lines)
