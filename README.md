@@ -22,6 +22,10 @@ to start with tree-sitter, but continue evaluating other options.
 
 (TODO: measure uv vs pip in github actions)
 
+## On external dependencies
+
+Currently they are just thrown in ./lib as a static libraries, need to think whether submodule them or download and build every rebuild (or rather on providing a special flag)
+
 ### Environment variables:
  - `PYTONGUE_LOG` - an absolute path to a log file. At this point is necessary, as stdout logs confuse server.
  - `PYTONGUE_TEST_BINARY` - an absolute path to an app binary. Used in end-to-end tests. Not necessary, as the default value works in most cases.

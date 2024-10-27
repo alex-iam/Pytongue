@@ -1,12 +1,14 @@
 # set PYTONGUE_LOG there
 set dotenv-load
+default:
+  @just --choose
 
 build:
     zig build
 run:
     zig build run
 test:
-    uv run pytest tests/e2e
+    uv run pytest tests/e2e && zig build test --summary all
 retest: build test
 
 patch:

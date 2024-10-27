@@ -33,6 +33,13 @@ pub fn build(b: *std.Build) !void {
         .optimize = optimize,
     });
 
+    exe.root_module.addObjectFile(b.path("lib/libtree-sitter.a"));
+    exe.root_module.addObjectFile(b.path("lib/libtree-sitter-python.a"));
+
+    exe.root_module.addIncludePath(b.path("include"));
+
+    exe.root_module.link_libc = true;
+
     exe.root_module.addOptions("build_options", exe_options);
 
     // This declares intent for the executable to be installed into the
@@ -64,10 +71,17 @@ pub fn build(b: *std.Build) !void {
     run_step.dependOn(&run_cmd.step);
 
     const exe_unit_tests = b.addTest(.{
-        .root_source_file = b.path("src/main.zig"),
+        .root_source_file = b.path("tests/integration/main.zig"),
         .target = target,
         .optimize = optimize,
     });
+
+    exe_unit_tests.addObjectFile(b.path("lib/libtree-sitter.a"));
+    exe_unit_tests.addObjectFile(b.path("lib/libtree-sitter-python.a"));
+
+    exe_unit_tests.addIncludePath(b.path("include"));
+
+    exe_unit_tests.linkLibC();
 
     const run_exe_unit_tests = b.addRunArtifact(exe_unit_tests);
 
