@@ -10,10 +10,8 @@ A project that aims to develop an LSP server for Python in Zig.
 
 ### Considerations regarding parsing solutions
 
-- Tree-sitter is not sufficient, also built-in everywhere already
-    - After a close look, tree-siter might actually be sufficient.
-- Python C API is too slow
-- ANTLR might be a good choice
+After doing some research, decided that the best course of actions would be
+to start with tree-sitter, but continue evaluating other options.
 
 ## Building, running, testing
 
