@@ -33,9 +33,9 @@ def add_license_header(file_path, header_content):
 
 
 def main():
-    header_path = Path("./license-header.txt")
+    header_path = Path("./file-header.txt")
     if not header_path.exists():
-        print("Error: license-header.txt not found", file=sys.stderr)
+        print("Error: file-header.txt not found", file=sys.stderr)
         sys.exit(1)
 
     try:
