@@ -22,7 +22,7 @@ to start with tree-sitter, but continue evaluating other options.
 
 (TODO: measure uv vs pip in github actions)
 
-## On external dependencies
+### On external dependencies
 
 Currently they are just thrown in ./lib as a static libraries, need to think whether submodule them or download and build every rebuild (or rather on providing a special flag)
 
