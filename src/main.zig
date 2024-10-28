@@ -22,9 +22,15 @@ const Handler = @import("server/handlers.zig").Handler;
 const StateManager = @import("server/state.zig").StateManager;
 const Config = @import("utils/config.zig").Config;
 const build_options = @import("build_options");
+const args = @import("utils/args.zig");
 
 pub const std_options = .{
     .logFn = logging.logMessageFn,
+};
+
+pub const RunOptions = enum {
+    server,
+    parser,
 };
 
 pub fn initLogging(allocator: std.mem.Allocator) !void {
@@ -38,13 +44,7 @@ pub fn initLogging(allocator: std.mem.Allocator) !void {
     }
 }
 
-pub fn main() !void {
-    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-
-    const allocator = arena.allocator();
-
-    try initLogging(allocator);
-
+pub fn runServer(allocator: std.mem.Allocator) !void {
     var stateManager = StateManager{};
     var config = Config{
         .projectName = "Pytongue",
@@ -52,11 +52,23 @@ pub fn main() !void {
     };
     var handler = Handler.init(&stateManager, allocator, &config);
 
+    var server = Server{ .handler = &handler, .stateManager = &stateManager };
+    try server.serve(allocator);
+}
+
+pub fn main() !void {
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const allocator = arena.allocator();
+    try initLogging(allocator);
+
+    const option = try args.parseOptionFromArgs(allocator);
+    switch (std.meta.stringToEnum(RunOptions, option).?) {
+        RunOptions.server => try runServer(allocator),
+        RunOptions.parser => {},
+    }
+
     defer {
         logging.GlobalLogger.deinit();
         arena.deinit();
     }
-
-    var server = Server{ .handler = &handler, .stateManager = &stateManager };
-    try server.serve(allocator);
 }

@@ -15,27 +15,19 @@
 // You should have received a copy of the GNU General Public License
 // along with Pytongue. If not, see <https://www.gnu.org/licenses/>.
 
-// As a first step, working with one file instead of a workspace.
+const std = @import("std");
 
-const TreeSitter = @import("tree-sitter.zig").TreeSitter;
-
-const Config = struct {
-    pythonPath: []const u8,
-};
-
-const PythonFile = struct {
-    tree: *TreeSitter.TSTree,
-
-    pub fn init(fileContents: []u8, parser: TreeSitter.TSParser) !PythonFile {
-        const tree = TreeSitter.ts_parser_parse_string(
-            &parser,
-            null,
-            fileContents,
-            @intCast(fileContents.len),
-        ) orelse return error.ParseError;
-        return PythonFile{ .tree = tree };
+// TODO generalize
+pub fn parseOptionFromArgs(allocator: std.mem.Allocator) ![]const u8 {
+    const args = try std.process.argsAlloc(allocator);
+    defer allocator.free(args);
+    if (args.len < 2) {
+        std.log.debug("no option provided, assuming server", .{});
+        return "server";
     }
-    pub fn deinit(self: PythonFile) void {
-        TreeSitter.ts_tree_delete(self.tree);
+    if (args.len > 2) {
+        return error.InvalidArgs;
     }
-};
+    std.log.debug("option provided: {s}", .{args[1]});
+    return args[1];
+}

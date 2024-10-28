@@ -15,27 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Pytongue. If not, see <https://www.gnu.org/licenses/>.
 
-// As a first step, working with one file instead of a workspace.
+pub const TreeSitter = @cImport({
+    @cInclude("tree_sitter/api.h");
+});
 
-const TreeSitter = @import("tree-sitter.zig").TreeSitter;
-
-const Config = struct {
-    pythonPath: []const u8,
-};
-
-const PythonFile = struct {
-    tree: *TreeSitter.TSTree,
-
-    pub fn init(fileContents: []u8, parser: TreeSitter.TSParser) !PythonFile {
-        const tree = TreeSitter.ts_parser_parse_string(
-            &parser,
-            null,
-            fileContents,
-            @intCast(fileContents.len),
-        ) orelse return error.ParseError;
-        return PythonFile{ .tree = tree };
-    }
-    pub fn deinit(self: PythonFile) void {
-        TreeSitter.ts_tree_delete(self.tree);
-    }
-};
+pub extern "c" fn tree_sitter_python() *TreeSitter.TSLanguage;

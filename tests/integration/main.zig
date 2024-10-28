@@ -2,11 +2,9 @@ const std = @import("std");
 
 const testing = std.testing;
 
-const TreeSitter = @cImport({
-    @cInclude("tree_sitter/api.h");
-});
+const TreeSitter = @import("./tree-sitter.zig").TreeSitter;
 
-extern "c" fn tree_sitter_python() *TreeSitter.TSLanguage;
+const tree_sitter_python = @import("./tree-sitter.zig").tree_sitter_python;
 
 test "parse-python-file" {
     const parser = TreeSitter.ts_parser_new();
