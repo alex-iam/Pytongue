@@ -23,6 +23,8 @@ const StateManager = @import("server/state.zig").StateManager;
 const Config = @import("utils/config.zig").Config;
 const build_options = @import("build_options");
 const args = @import("utils/args.zig");
+const parser = @import("parser/parser.zig");
+const ts = @import("parser/tree-sitter.zig");
 
 pub const std_options = .{
     .logFn = logging.logMessageFn,
@@ -56,6 +58,23 @@ pub fn runServer(allocator: std.mem.Allocator) !void {
     try server.serve(allocator);
 }
 
+pub fn runParser() !void {
+    const code =
+        \\ x = "Hello, World!"
+        \\ print(x)
+        \\ y = 2
+        \\ print(y + 7)
+    ;
+    const p = ts.TreeSitter.ts_parser_new().?;
+    defer ts.TreeSitter.ts_parser_delete(p);
+
+    _ = ts.TreeSitter.ts_parser_set_language(p, ts.tree_sitter_python());
+
+    const pythonFile = try parser.PythonFile.init(code, p);
+    defer pythonFile.deinit();
+    pythonFile.printTree();
+}
+
 pub fn main() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     const allocator = arena.allocator();
@@ -64,7 +83,7 @@ pub fn main() !void {
     const option = try args.parseOptionFromArgs(allocator);
     switch (std.meta.stringToEnum(RunOptions, option).?) {
         RunOptions.server => try runServer(allocator),
-        RunOptions.parser => {},
+        RunOptions.parser => try runParser(),
     }
 
     defer {

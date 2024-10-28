@@ -18,22 +18,27 @@
 // As a first step, working with one file instead of a workspace.
 
 const TreeSitter = @import("tree-sitter.zig").TreeSitter;
+const TsDebug = @import("debug.zig");
+const std = @import("std");
 
 const Config = struct {
     pythonPath: []const u8,
 };
 
-const PythonFile = struct {
+pub const PythonFile = struct {
     tree: *TreeSitter.TSTree,
 
-    pub fn init(fileContents: []u8, parser: TreeSitter.TSParser) !PythonFile {
+    pub fn init(fileContents: []const u8, parser: *TreeSitter.TSParser) !PythonFile {
         const tree = TreeSitter.ts_parser_parse_string(
-            &parser,
+            parser,
             null,
-            fileContents,
+            fileContents.ptr,
             @intCast(fileContents.len),
         ) orelse return error.ParseError;
         return PythonFile{ .tree = tree };
+    }
+    pub fn printTree(self: PythonFile) void {
+        TsDebug.printTree(self.tree);
     }
     pub fn deinit(self: PythonFile) void {
         TreeSitter.ts_tree_delete(self.tree);

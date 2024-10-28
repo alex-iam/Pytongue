@@ -5,8 +5,8 @@ default:
 
 build:
     zig build
-run:
-    zig build run
+run arg:
+    zig build run -- {{arg}}
 test:
     uv run pytest tests/e2e && zig build test --summary all
 retest: build test
