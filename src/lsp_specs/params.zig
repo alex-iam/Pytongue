@@ -112,3 +112,13 @@ pub const InitializeResult = struct {
         version: ?[]const u8,
     },
 };
+
+pub const TextDocumentPositionParams = struct {
+    /// The text document.
+    textDocument: struct {
+        /// The text document's URI.
+        const uri: []const u8 = "";
+    },
+    /// The position inside the text document.
+    position: types.Position,
+};

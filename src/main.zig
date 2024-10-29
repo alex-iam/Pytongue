@@ -58,21 +58,22 @@ pub fn runServer(allocator: std.mem.Allocator) !void {
     try server.serve(allocator);
 }
 
-pub fn runParser() !void {
-    const code =
-        \\ x = "Hello, World!"
-        \\ print(x)
-        \\ y = 2
-        \\ print(y + 7)
-    ;
+pub fn runParser(allocator: std.mem.Allocator) !void {
     const p = ts.TreeSitter.ts_parser_new().?;
     defer ts.TreeSitter.ts_parser_delete(p);
 
     _ = ts.TreeSitter.ts_parser_set_language(p, ts.tree_sitter_python());
-
-    const pythonFile = try parser.PythonFile.init(code, p);
-    defer pythonFile.deinit();
-    pythonFile.printTree();
+    var workspace = parser.Workspace.init(
+        "/home/alex/Documents/code/zig/pytongue",
+        "/home/alex/Documents/code/zig/pytongue/.venv/bin/python",
+        p,
+        allocator,
+    );
+    defer workspace.deinit();
+    const file = try workspace.parseFile("/home/alex/Documents/code/zig/pytongue/tests/assets/main.py", false);
+    const file2 = try workspace.parseFile("/home/alex/Documents/code/zig/pytongue/tests/assets/main.py", true);
+    file.printTree();
+    file2.printTree();
 }
 
 pub fn main() !void {
@@ -83,7 +84,7 @@ pub fn main() !void {
     const option = try args.parseOptionFromArgs(allocator);
     switch (std.meta.stringToEnum(RunOptions, option).?) {
         RunOptions.server => try runServer(allocator),
-        RunOptions.parser => try runParser(),
+        RunOptions.parser => try runParser(allocator),
     }
 
     defer {

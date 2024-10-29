@@ -63,3 +63,26 @@ pub const ObjectOrArray = union(enum) {
     }
 };
 pub const ProgressToken = IntOrString;
+
+pub const Position = struct {
+    /// Line position in a document (zero-based).
+    line: u64,
+    /// Character offset on a line in a document (zero-based).
+    character: u64,
+};
+pub const Range = struct {
+    /// The range's start position.
+    start: Position,
+    /// The range's end position.
+    end: Position,
+};
+pub const Location = struct {
+    uri: []const u8,
+    range: Range,
+};
+pub const LocationLink = struct {
+    originSelectionRange: ?Range,
+    targetUri: []const u8,
+    targetRange: Range,
+    targetSelectionRange: Range,
+};
