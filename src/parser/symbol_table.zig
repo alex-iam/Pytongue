@@ -66,6 +66,7 @@ pub const Scope = struct {
     }
 
     pub fn addChildScope(self: *Scope, child_scope: *Scope) !void {
+        child_scope.parent = self;
         try self.children.append(child_scope);
     }
 
