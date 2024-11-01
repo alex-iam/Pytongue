@@ -1,12 +1,16 @@
 # Pytongue [![Tests](https://github.com/alex-korzh/Pytongue/actions/workflows/e2e-test.yml/badge.svg)](https://github.com/alex-korzh/Pytongue/actions/workflows/e2e-test.yml)
 A project that aims to develop an LSP server for Python in Zig.
 
-## Current state of the development:
+## Current state of the development, plans:
 
 - [x] Basic LSP server with generally compliant lifecycle
 - [x] More checks for invalid methods, handler refactoring
-- [ ] Parsing Python
-- [ ] Connecting parsing to the server
+- [x] Parsing Python to AST (tree-sitter)
+- [ ] Building symbol table
+- [ ] Implementing basic code actions
+- [ ] Connecting those to the server
+
+At some point: move lsp specs into a separate module (when mature enough)
 
 ### Considerations regarding parsing solutions
 
