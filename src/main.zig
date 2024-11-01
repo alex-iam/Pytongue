@@ -22,17 +22,11 @@ const Handler = @import("server/handlers.zig").Handler;
 const StateManager = @import("server/state.zig").StateManager;
 const Config = @import("utils/config.zig").Config;
 const build_options = @import("build_options");
-const args = @import("utils/args.zig");
-const parser = @import("parser/parser.zig");
-const ts = @import("parser/tree-sitter.zig");
+pub const parser = @import("parser/parser.zig");
+pub const ts = @import("parser/tree-sitter.zig"); // pub for tests
 
 pub const std_options = .{
     .logFn = logging.logMessageFn,
-};
-
-pub const RunOptions = enum {
-    server,
-    parser,
 };
 
 pub fn initLogging(allocator: std.mem.Allocator) !void {
@@ -58,35 +52,11 @@ pub fn runServer(allocator: std.mem.Allocator) !void {
     try server.serve(allocator);
 }
 
-pub fn runParser(allocator: std.mem.Allocator) !void {
-    const p = ts.TreeSitter.ts_parser_new().?;
-    defer ts.TreeSitter.ts_parser_delete(p);
-
-    _ = ts.TreeSitter.ts_parser_set_language(p, ts.tree_sitter_python());
-    var workspace = parser.Workspace.init(
-        "/home/alex/Documents/code/zig/pytongue",
-        "/home/alex/Documents/code/zig/pytongue/.venv/bin/python",
-        p,
-        allocator,
-    );
-    defer workspace.deinit();
-    const file = try workspace.parseFile("/home/alex/Documents/code/zig/pytongue/tests/assets/main.py", false);
-    const file2 = try workspace.parseFile("/home/alex/Documents/code/zig/pytongue/tests/assets/main.py", true);
-    file.printTree();
-    file2.printTree();
-}
-
 pub fn main() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     const allocator = arena.allocator();
     try initLogging(allocator);
-
-    const option = try args.parseOptionFromArgs(allocator);
-    switch (std.meta.stringToEnum(RunOptions, option).?) {
-        RunOptions.server => try runServer(allocator),
-        RunOptions.parser => try runParser(allocator),
-    }
-
+    try runServer(allocator);
     defer {
         logging.GlobalLogger.deinit();
         arena.deinit();

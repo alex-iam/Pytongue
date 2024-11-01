@@ -2,31 +2,24 @@ const std = @import("std");
 
 const testing = std.testing;
 
-const TreeSitter = @import("./tree-sitter.zig").TreeSitter;
+const pytongue = @import("pytongue");
 
-const tree_sitter_python = @import("./tree-sitter.zig").tree_sitter_python;
+const ts = pytongue.ts;
+const parser = @import("pytongue").parser;
 
 test "parse-python-file" {
-    const parser = TreeSitter.ts_parser_new();
-    defer TreeSitter.ts_parser_delete(parser);
+    const allocator = testing.allocator;
 
-    _ = TreeSitter.ts_parser_set_language(parser, tree_sitter_python());
+    const p = ts.TreeSitter.ts_parser_new().?;
+    defer ts.TreeSitter.ts_parser_delete(p);
 
-    const file = try std.fs.cwd().openFile("./tests/assets/main.py", .{});
-    defer file.close();
-
-    const stat = try file.stat(); // might be a race condition, but we're assuming file size won't change
-    const source_code = try file.readToEndAlloc(testing.allocator, stat.size);
-    defer testing.allocator.free(source_code);
-
-    const tree = TreeSitter.ts_parser_parse_string(
-        parser,
-        null,
-        source_code.ptr,
-        @intCast(source_code.len),
+    _ = ts.TreeSitter.ts_parser_set_language(p, ts.tree_sitter_python());
+    var workspace = parser.Workspace.init(
+        "/home/alex/Documents/code/zig/pytongue",
+        "/home/alex/Documents/code/zig/pytongue/.venv/bin/python",
+        p,
+        allocator,
     );
-    defer TreeSitter.ts_tree_delete(tree);
-
-    const root_node = TreeSitter.ts_tree_root_node(tree);
-    try testing.expect(!TreeSitter.ts_node_is_null(root_node));
+    defer workspace.deinit();
+    _ = try workspace.parseFile("/home/alex/Documents/code/zig/pytongue/tests/assets/main.py", false);
 }

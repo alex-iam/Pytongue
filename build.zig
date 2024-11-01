@@ -76,12 +76,7 @@ pub fn build(b: *std.Build) !void {
         .optimize = optimize,
     });
 
-    exe_unit_tests.addObjectFile(b.path("lib/libtree-sitter.a"));
-    exe_unit_tests.addObjectFile(b.path("lib/libtree-sitter-python.a"));
-
-    exe_unit_tests.addIncludePath(b.path("include"));
-
-    exe_unit_tests.linkLibC();
+    exe_unit_tests.root_module.addImport("pytongue", &exe.root_module);
 
     const run_exe_unit_tests = b.addRunArtifact(exe_unit_tests);
 
