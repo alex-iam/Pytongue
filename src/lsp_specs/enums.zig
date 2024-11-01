@@ -40,7 +40,15 @@ pub const FailureHandlingKind = enum {
     undo,
 };
 
-pub const SymbolKind = enum { File, Module, Namespace, Package, Class, Method, Property, Field, Constructor, Enum, Interface, Function, Variable, Constant, String, Number, Boolean, Array, Object, Key, Null, EnumMember, Struct, Event, Operator, TypeParameter };
+/// Only types that are needed for the
+/// limited scope of the project.
+pub const SymbolKind = enum(u32) {
+    File = 1, // same as Module in Python
+    Module = 2,
+    Class = 5,
+    Function = 12,
+    Variable = 13,
+};
 
 pub const MarkupKind = enum {
     plaintext,
@@ -77,7 +85,17 @@ pub const CompletionItemKind = enum {
     Operator,
     TypeParameter,
 };
-pub const CodeActionKind = [_][]const u8{ "", "quickfix", "refactor", "refactor.extract", "refactor.inline", "refactor.rewrite", "source", "source.organizeImports", "source.fixAll" };
+pub const CodeActionKind = [9][]const u8{
+    "",
+    "quickfix",
+    "refactor",
+    "refactor.extract",
+    "refactor.inline",
+    "refactor.rewrite",
+    "source",
+    "source.organizeImports",
+    "source.fixAll",
+};
 
 pub const DiagnosticTag = enum {
     ///

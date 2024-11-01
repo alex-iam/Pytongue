@@ -69,6 +69,11 @@ pub const Position = struct {
     line: u64,
     /// Character offset on a line in a document (zero-based).
     character: u64,
+
+    pub fn inRange(self: Position, range: Range) bool {
+        return self.line >= range.start.line and self.line <= range.end.line and
+            self.character >= range.start.character and self.character <= range.end.character;
+    }
 };
 pub const Range = struct {
     /// The range's start position.

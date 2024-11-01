@@ -22,7 +22,7 @@ const Handler = @import("server/handlers.zig").Handler;
 const StateManager = @import("server/state.zig").StateManager;
 const Config = @import("utils/config.zig").Config;
 const build_options = @import("build_options");
-pub const parser = @import("parser/parser.zig");
+pub const workspace = @import("parser/workspace.zig");
 pub const ts = @import("parser/tree-sitter.zig"); // pub for tests
 
 pub const std_options = .{

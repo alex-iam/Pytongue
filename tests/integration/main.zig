@@ -5,7 +5,7 @@ const testing = std.testing;
 const pytongue = @import("pytongue");
 
 const ts = pytongue.ts;
-const parser = @import("pytongue").parser;
+const parser = @import("pytongue").workspace;
 
 test "parse-python-file" {
     const allocator = testing.allocator;
