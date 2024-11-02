@@ -15,28 +15,31 @@
 // You should have received a copy of the GNU General Public License
 // along with Pytongue. If not, see <https://www.gnu.org/licenses/>.
 
-const Server = @import("server/server.zig").Server;
 const std = @import("std");
-const logging = @import("utils/logging.zig");
-const Handler = @import("server/handlers.zig").Handler;
-const StateManager = @import("server/state.zig").StateManager;
-const Config = @import("utils/config.zig").Config;
 const build_options = @import("build_options");
-pub const workspace = @import("parser/workspace.zig");
-pub const ts = @import("parser/treesitter.zig"); // pub for tests
+
+const server = @import("server");
+const Server = server.Server;
+const Handler = server.Handler;
+const StateManager = server.StateManager;
+
+const utils = @import("utils");
+const Config = utils.Config;
+const logMessageFn = utils.logging.logMessageFn;
+const Logger = utils.logging.Logger;
 
 pub const std_options = .{
-    .logFn = logging.logMessageFn,
+    .logFn = logMessageFn,
 };
 
 pub fn initLogging(allocator: std.mem.Allocator) !void {
-    logging.GlobalLogger = logging.Logger.init(allocator);
+    utils.logging.GlobalLogger = Logger.init(allocator);
 
     var env_map = try std.process.getEnvMap(allocator);
     defer env_map.deinit();
 
     if (env_map.get("PYTONGUE_LOG")) |lfn| {
-        try logging.GlobalLogger.openLogFile(lfn);
+        try utils.logging.GlobalLogger.openLogFile(lfn);
     }
 }
 
@@ -48,8 +51,8 @@ pub fn runServer(allocator: std.mem.Allocator) !void {
     };
     var handler = Handler.init(&stateManager, allocator, &config);
 
-    var server = Server{ .handler = &handler, .stateManager = &stateManager };
-    try server.serve(allocator);
+    var s = Server{ .handler = &handler, .stateManager = &stateManager };
+    try s.serve(allocator);
 }
 
 pub fn main() !void {
@@ -58,7 +61,7 @@ pub fn main() !void {
     try initLogging(allocator);
     try runServer(allocator);
     defer {
-        logging.GlobalLogger.deinit();
+        utils.logging.GlobalLogger.deinit();
         arena.deinit();
     }
 }

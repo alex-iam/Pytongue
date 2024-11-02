@@ -18,7 +18,7 @@
 const std = @import("std");
 const StateManager = @import("state.zig").StateManager;
 const Handler = @import("handlers.zig").Handler;
-const ec = @import("../lsp_specs/error_codes.zig");
+const ec = @import("lsp_specs").error_codes;
 const MAX_HEADER_SIZE = 256;
 
 pub const Server = struct {

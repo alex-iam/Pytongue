@@ -18,7 +18,7 @@
 const TreeSitter = @import("treesitter.zig").TreeSitter;
 const TsDebug = @import("debug.zig");
 const std = @import("std");
-const p = @import("../lsp_specs/params.zig");
+const p = @import("lsp_specs").params;
 
 const FILE_SIZE_LIMIT = 5_000_000;
 

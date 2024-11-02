@@ -15,6 +15,47 @@ pub fn build(b: *std.Build) !void {
     // set a preferred release mode, allowing the user to decide how to optimize.
     const optimize = b.standardOptimizeOption(.{});
 
+    const lsp_specs = b.createModule(.{
+        .root_source_file = b.path("src/lsp_specs/root.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const utils = b.createModule(.{
+        .root_source_file = b.path("src/utils/root.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const server = b.createModule(.{
+        .root_source_file = b.path("src/server/root.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{
+                .name = "lsp_specs",
+                .module = lsp_specs,
+            },
+            .{
+                .name = "utils",
+                .module = utils,
+            },
+        },
+    });
+    const parser = b.createModule(.{
+        .root_source_file = b.path("src/parser/root.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{.{
+            .name = "lsp_specs",
+            .module = lsp_specs,
+        }},
+        .link_libc = true,
+    });
+
+    parser.addObjectFile(b.path("lib/libtree-sitter.a"));
+    parser.addObjectFile(b.path("lib/libtree-sitter-python.a"));
+
+    parser.addIncludePath(b.path("include"));
+
     const version_contents = try std.fs.cwd().readFileAlloc(
         b.allocator,
         "version",
@@ -41,6 +82,9 @@ pub fn build(b: *std.Build) !void {
     exe.root_module.link_libc = true;
 
     exe.root_module.addOptions("build_options", exe_options);
+
+    exe.root_module.addImport("server", server);
+    exe.root_module.addImport("utils", utils);
 
     // This declares intent for the executable to be installed into the
     // standard location when the user invokes the "install" step (the default
@@ -76,7 +120,7 @@ pub fn build(b: *std.Build) !void {
         .optimize = optimize,
     });
 
-    exe_unit_tests.root_module.addImport("pytongue", &exe.root_module);
+    exe_unit_tests.root_module.addImport("parser", parser);
 
     const run_exe_unit_tests = b.addRunArtifact(exe_unit_tests);
 

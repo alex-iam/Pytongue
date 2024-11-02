@@ -17,13 +17,15 @@
 
 const std = @import("std");
 const s = @import("state.zig");
-const m = @import("../lsp_specs/messages.zig");
-const ec = @import("../lsp_specs/error_codes.zig");
-const p = @import("../lsp_specs/params.zig");
-const t = @import("../lsp_specs/lsp_types.zig");
-const e = @import("../lsp_specs/enums.zig");
-const j = @import("../utils/json.zig");
-const Config = @import("../utils/config.zig").Config;
+const lsp_specs = @import("lsp_specs");
+const m = lsp_specs.messages;
+const ec = lsp_specs.error_codes;
+const p = lsp_specs.params;
+const t = lsp_specs.lsp_types;
+const e = lsp_specs.enums;
+const utils = @import("utils");
+const parseValue = utils.parseValue;
+const Config = utils.Config;
 
 pub const ParsedRequestInfo = struct {
     id: ?t.IntOrString = undefined,
@@ -111,7 +113,7 @@ pub const Handler = struct {
     }
 
     pub fn parseRequst(self: *Handler, request: []const u8) !void {
-        var parsedRequest = try j.parseValue(self.allocator, request);
+        var parsedRequest = try parseValue(self.allocator, request);
         self.parsedInfo = ParsedRequestInfo{
             .id = self.parseId(parsedRequest.object.get("id")),
             .request = parsedRequest,
