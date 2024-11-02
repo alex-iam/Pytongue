@@ -7,8 +7,10 @@ build:
     zig build
 run arg:
     zig build run -- {{arg}}
-test:
-    uv run pytest tests/e2e && zig build test --summary all
+ztest:
+    rm -rf .zig-cache && zig build test --summary all
+test: ztest
+    uv run pytest tests/e2e
 retest: build test
 
 patch:

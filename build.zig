@@ -84,7 +84,9 @@ pub fn build(b: *std.Build) !void {
     exe.root_module.addOptions("build_options", exe_options);
 
     exe.root_module.addImport("server", server);
+    exe.root_module.addImport("parser", server);
     exe.root_module.addImport("utils", utils);
+    exe.root_module.addImport("lsp_specs", lsp_specs);
 
     // This declares intent for the executable to be installed into the
     // standard location when the user invokes the "install" step (the default
@@ -115,12 +117,23 @@ pub fn build(b: *std.Build) !void {
     run_step.dependOn(&run_cmd.step);
 
     const exe_unit_tests = b.addTest(.{
-        .root_source_file = b.path("tests/test_integration.zig"),
+        .root_source_file = b.path("src/tests.zig"),
         .target = target,
+        .test_runner = b.path("test_runner.zig"),
         .optimize = optimize,
     });
 
     exe_unit_tests.root_module.addImport("parser", parser);
+    exe_unit_tests.root_module.addImport("utils", utils);
+    exe_unit_tests.root_module.addImport("server", server);
+    exe_unit_tests.root_module.addImport("lsp_specs", lsp_specs);
+
+    exe_unit_tests.root_module.link_libc = true;
+    exe_unit_tests.root_module.addIncludePath(b.path("include"));
+    exe_unit_tests.root_module.addObjectFile(b.path("lib/libtree-sitter.a"));
+    exe_unit_tests.root_module.addObjectFile(b.path("lib/libtree-sitter-python.a"));
+
+    exe_unit_tests.root_module.addOptions("build_options", exe_options);
 
     const run_exe_unit_tests = b.addRunArtifact(exe_unit_tests);
 
