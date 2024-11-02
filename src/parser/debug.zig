@@ -16,7 +16,7 @@
 // along with Pytongue. If not, see <https://www.gnu.org/licenses/>.
 
 const std = @import("std");
-const TreeSitter = @import("tree-sitter.zig").TreeSitter;
+const TreeSitter = @import("treesitter.zig").TreeSitter;
 
 fn printNode(node: TreeSitter.TSNode, depth: usize) void {
     const start = TreeSitter.ts_node_start_byte(node);

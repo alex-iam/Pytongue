@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Pytongue. If not, see <https://www.gnu.org/licenses/>.
 
-const TreeSitter = @import("tree-sitter.zig").TreeSitter;
+const TreeSitter = @import("treesitter.zig").TreeSitter;
 const TsDebug = @import("debug.zig");
 const std = @import("std");
 const p = @import("../lsp_specs/params.zig");

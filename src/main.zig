@@ -23,7 +23,7 @@ const StateManager = @import("server/state.zig").StateManager;
 const Config = @import("utils/config.zig").Config;
 const build_options = @import("build_options");
 pub const workspace = @import("parser/workspace.zig");
-pub const ts = @import("parser/tree-sitter.zig"); // pub for tests
+pub const ts = @import("parser/treesitter.zig"); // pub for tests
 
 pub const std_options = .{
     .logFn = logging.logMessageFn,
