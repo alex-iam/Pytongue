@@ -13,10 +13,9 @@ test "parse-python-file" {
     const p = TreeSitter.ts_parser_new().?;
 
     _ = TreeSitter.ts_parser_set_language(p, tree_sitter_python());
-    // FIXME
     var workspace = Workspace.init(
-        "/home/alex/Documents/code/zig/pytongue",
-        "/home/alex/Documents/code/zig/pytongue/.venv/bin/python",
+        "/tmp", // not used right now in Workspace
+        "/usr/bin/python3",
         p,
         allocator,
     );

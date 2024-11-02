@@ -16,10 +16,10 @@
 // along with Pytongue. If not, see <https://www.gnu.org/licenses/>.
 
 const std = @import("std");
-
-const Position = @import("../lsp_specs/lsp_types.zig").Position;
-const SymbolKind = @import("../lsp_specs/enums.zig").SymbolKind;
-const Location = @import("../lsp_specs/lsp_types.zig").Location;
+const lsp_specs = @import("lsp_specs");
+const Position = lsp_specs.lsp_types.Position;
+const SymbolKind = lsp_specs.enums.SymbolKind;
+const Location = lsp_specs.lsp_types.Location;
 
 pub const Symbol = struct {
     name: []const u8,
