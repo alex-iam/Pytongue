@@ -31,6 +31,23 @@ fn parseTSNode(st: *SymbolTable, node: TSNode) !void {
     }
 }
 
+/// Treesitter nodes we care about:
+/// - `class_definition` followed by `identifier` (class name) is Symbol
+///     `class_definition` is Scope
+/// - `function_definition` followed by `identifier` (function name) is Symbol
+///    `function_definition` is Scope
+/// - `assignment` followed by `left`:`identifier` (variable name) is Symbol
+/// `module` is Scope (file)
+///
+/// Parsing strategy:
+/// - Determine where file belongs in the symbol table, assuming every directory is a scope
+/// - Create new scope, write ts_node_start_byte and ts_node_end_byte from root node as range
+/// (assuming root node is `module`)
+/// - For every node:
+///    - If node is `class_definition`, `function_definition` or `assignment`:
+///       - Create new Scope, look for `identifier` in children
+///       - If found, create new Symbol, write ts_node_start_byte and ts_node_end_byte as range
+///
 pub fn ParseASTIntoST(file: *PythonFile, st: *SymbolTable) !void {
     const rootNode = TreeSitter.ts_tree_root_node(file.tree);
     parseTSNode(st, rootNode);
