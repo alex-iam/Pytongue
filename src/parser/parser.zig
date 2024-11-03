@@ -32,9 +32,9 @@ fn parseTSNode(st: *SymbolTable, node: TSNode) !void {
 }
 
 /// Treesitter nodes we care about:
-/// - `class_definition` followed by `identifier` (class name) is Symbol
+/// - `class_definition` followed by `name`:`identifier` (class name) is Symbol
 ///     `class_definition` is Scope
-/// - `function_definition` followed by `identifier` (function name) is Symbol
+/// - `function_definition` followed by `name`:`identifier` (function name) is Symbol
 ///    `function_definition` is Scope
 /// - `assignment` followed by `left`:`identifier` (variable name) is Symbol
 /// `module` is Scope (file)
