@@ -80,10 +80,11 @@ pub const Scope = struct {
 
     pub fn findInnermostScope(self: *Scope, pos: TextDocumentPositionParams) ?*Scope {
         // no range for scopes bigger than file
+        // if range is not null, it's a file and its uri should match
         if ((self.range == null and
             (std.mem.eql(u8, self.uri, pos.textDocument.uri) or
             std.mem.startsWith(u8, pos.textDocument.uri, self.uri))) or
-            (self.range != null and pos.position.inRange(self.range.?)))
+            (self.range != null and std.mem.eql(u8, self.uri, pos.textDocument.uri) and pos.position.inRange(self.range.?)))
         {
             for (self.children.items) |child| {
                 const innermost = child.findInnermostScope(pos);

@@ -93,5 +93,17 @@ test "scope: find innermost: deep in tree" {
             },
         },
     );
+    const foundScope2 = rootScope.findInnermostScope(
+        .{
+            .textDocument = .{
+                .uri = "src/hello.py",
+            },
+            .position = .{
+                .line = 0,
+                .character = 15,
+            },
+        },
+    );
     try testing.expectEqual(grandChildScope, foundScope);
+    try testing.expectEqual(secondChildScope, foundScope2);
 }
