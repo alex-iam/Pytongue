@@ -71,8 +71,9 @@ pub const Position = struct {
     character: u64,
 
     pub fn inRange(self: Position, range: Range) bool {
-        return self.line >= range.start.line and self.line <= range.end.line and
-            self.character >= range.start.character and self.character <= range.end.character;
+        return (self.line > range.start.line and self.line < range.end.line) or
+            (self.line == range.start.line and self.character >= range.start.character) or
+            (self.line == range.end.line and self.character <= range.end.character);
     }
 };
 pub const Range = struct {

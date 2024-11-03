@@ -20,6 +20,7 @@ const lsp_specs = @import("lsp_specs");
 const Position = lsp_specs.lsp_types.Position;
 const SymbolKind = lsp_specs.enums.SymbolKind;
 const Range = lsp_specs.lsp_types.Range;
+const TextDocumentPositionParams = lsp_specs.params.TextDocumentPositionParams;
 
 pub const Symbol = struct {
     name: []const u8,
@@ -77,11 +78,15 @@ pub const Scope = struct {
         try self.children.append(child_scope);
     }
 
-    pub fn findInnermostScope(self: *Scope, position: Position) ?*Scope {
+    pub fn findInnermostScope(self: *Scope, pos: TextDocumentPositionParams) ?*Scope {
         // no range for scopes bigger than file
-        if (self.range == null or (self.range != null and position.inRange(self.range.?))) {
+        if ((self.range == null and
+            (std.mem.eql(u8, self.uri, pos.textDocument.uri) or
+            std.mem.startsWith(u8, pos.textDocument.uri, self.uri))) or
+            (self.range != null and pos.position.inRange(self.range.?)))
+        {
             for (self.children.items) |child| {
-                const innermost = child.findInnermostScope(position);
+                const innermost = child.findInnermostScope(pos);
                 if (innermost != null) {
                     return innermost;
                 }
