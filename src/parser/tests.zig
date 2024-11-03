@@ -21,7 +21,7 @@ const Scope = @import("symbol_table.zig").Scope;
 const Symbol = @import("symbol_table.zig").Symbol;
 const Range = @import("lsp_specs").lsp_types.Range;
 const Position = @import("lsp_specs").lsp_types.Position;
-const CreateScope = @import("symbol_table.zig").CreateScope;
+const CreateScopePtr = @import("symbol_table.zig").CreateScopePtr;
 
 test "scope: init and deinit" {
     const allocator = std.testing.allocator;
@@ -34,7 +34,7 @@ test "scope: add child scope" {
     const allocator = std.testing.allocator;
     var rootScope = Scope.init(allocator, null, "src", null);
     defer rootScope.deinit();
-    const childScope = try CreateScope(
+    const childScope = try CreateScopePtr(
         allocator,
         &rootScope,
         "src/main.py",
@@ -69,7 +69,7 @@ test "scope: find innermost: deep in tree" {
     const allocator = std.testing.allocator;
     var rootScope = Scope.init(allocator, null, "src", null);
     defer rootScope.deinit();
-    const childScope = try CreateScope(
+    const childScope = try CreateScopePtr(
         allocator,
         &rootScope,
         "src/main.py",
@@ -79,7 +79,7 @@ test "scope: find innermost: deep in tree" {
         },
     );
     try rootScope.addChildScope(childScope);
-    const grandChildScope = try CreateScope(
+    const grandChildScope = try CreateScopePtr(
         allocator,
         childScope,
         "src/main.py",
@@ -89,7 +89,7 @@ test "scope: find innermost: deep in tree" {
         },
     );
     try childScope.addChildScope(grandChildScope);
-    const secondChildScope = try CreateScope(
+    const secondChildScope = try CreateScopePtr(
         allocator,
         &rootScope,
         "src/hello.py",

@@ -98,7 +98,7 @@ pub const Scope = struct {
     }
 };
 
-pub fn CreateScope(allocator: std.mem.Allocator, parent: ?*Scope, uri: []const u8, range: ?Range) !*Scope {
+pub fn CreateScopePtr(allocator: std.mem.Allocator, parent: ?*Scope, uri: []const u8, range: ?Range) !*Scope {
     const scope = try allocator.create(Scope);
     scope.* = .{
         .parent = parent,
@@ -129,3 +129,11 @@ pub const SymbolTable = struct {
         return self.rootScope.findInnermostScope(position);
     }
 };
+pub fn CreateSymbolTablePtr(allocator: std.mem.Allocator, root_uri: []const u8) !SymbolTable {
+    const symbolTable = try allocator.create(SymbolTable);
+    symbolTable.* = .{
+        .rootScope = Scope.init(allocator, null, root_uri, null),
+        .allocator = allocator,
+    };
+    return symbolTable;
+}

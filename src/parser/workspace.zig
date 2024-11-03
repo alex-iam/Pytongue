@@ -19,6 +19,8 @@ const TreeSitter = @import("treesitter.zig").TreeSitter;
 const TsDebug = @import("debug.zig");
 const std = @import("std");
 const p = @import("lsp_specs").params;
+const SymbolTable = @import("symbol_table.zig").SymbolTable;
+const CreateSymbolTablePtr = @import("symbol_table.zig").CreateSymbolTablePtr;
 
 const FILE_SIZE_LIMIT = 5_000_000;
 
@@ -61,6 +63,7 @@ pub const Workspace = struct {
     pythonPath: []const u8,
     parser: *TreeSitter.TSParser,
     cachedFiles: std.StringHashMap(PythonFile),
+    symbolTable: *SymbolTable,
     allocator: std.mem.Allocator,
 
     pub fn init(
@@ -68,13 +71,14 @@ pub const Workspace = struct {
         pythonPath: []const u8,
         parser: *TreeSitter.TSParser,
         allocator: std.mem.Allocator,
-    ) Workspace {
+    ) !Workspace {
         std.log.debug("Workspace init", .{});
         return Workspace{
             .rootDir = rootDir,
             .pythonPath = pythonPath,
             .parser = parser,
             .cachedFiles = std.StringHashMap(PythonFile).init(allocator),
+            .symbolTable = try CreateSymbolTablePtr(allocator, rootDir),
             .allocator = allocator,
         };
     }
@@ -85,22 +89,20 @@ pub const Workspace = struct {
             entry.value_ptr.deinit();
         }
         self.cachedFiles.deinit();
-        std.log.debug("Workspace deinit", .{});
+        self.symbolTable.deinit();
+        self.allocator.destroy(self.symbolTable);
     }
 
     pub fn parseFile(self: *Workspace, filePath: []const u8, forceUpdate: bool) !PythonFile {
         var existingFile = self.cachedFiles.get(filePath);
         if (existingFile != null and !forceUpdate) {
-            std.log.debug("File already parsed: {s}", .{filePath});
             return self.cachedFiles.get(filePath).?;
         }
-        std.log.debug("Parsing file: {s}", .{filePath});
         const file = try std.fs.openFileAbsolute(filePath, .{ .mode = .read_only });
         defer file.close();
         const fileContents = try file.readToEndAlloc(self.allocator, FILE_SIZE_LIMIT);
         defer self.allocator.free(fileContents);
         if (existingFile != null and forceUpdate) {
-            std.log.debug("Updating file: {s}", .{filePath});
             try existingFile.?.update(fileContents, self.parser);
             return existingFile.?;
         } else {
