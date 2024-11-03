@@ -125,7 +125,7 @@ pub const SymbolTable = struct {
         self.rootScope.deinit();
     }
 
-    pub fn findInnermostScope(self: *SymbolTable, position: Position) ?*Scope {
+    pub fn findInnermostScope(self: *SymbolTable, position: TextDocumentPositionParams) ?*Scope {
         return self.rootScope.findInnermostScope(position);
     }
 };

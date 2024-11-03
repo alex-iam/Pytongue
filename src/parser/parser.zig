@@ -15,8 +15,23 @@
 // You should have received a copy of the GNU General Public License
 // along with Pytongue. If not, see <https://www.gnu.org/licenses/>.
 
-pub const error_codes = @import("error_codes.zig");
-pub const enums = @import("enums.zig");
-pub const lsp_types = @import("lsp_types.zig");
-pub const messages = @import("messages.zig");
-pub const params = @import("params.zig");
+const TreeSitter = @import("treesitter.zig").TreeSitter;
+const TSTree = TreeSitter.TSTree;
+const TSNode = TreeSitter.TSNode;
+
+const SymbolTable = @import("symbol_table.zig").SymbolTable;
+const PythonFile = @import("workspace.zig").PythonFile;
+
+fn parseTSNode(st: *SymbolTable, node: TSNode) !void {
+    const child_count = TreeSitter.ts_node_child_count(node);
+    var i: usize = 0;
+    while (i < child_count) : (i += 1) {
+        const child = TreeSitter.ts_node_child(node, @intCast(i));
+        parseTSNode(st, child);
+    }
+}
+
+pub fn ParseASTIntoST(file: *PythonFile, st: *SymbolTable) !void {
+    const rootNode = TreeSitter.ts_tree_root_node(file.tree);
+    parseTSNode(st, rootNode);
+}
