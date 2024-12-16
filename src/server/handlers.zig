@@ -112,7 +112,7 @@ pub const Handler = struct {
         return null;
     }
 
-    pub fn parseRequst(self: *Handler, request: []const u8) !void {
+    pub fn parseRequest(self: *Handler, request: []const u8) !void {
         var parsedRequest = try parseValue(self.allocator, request);
         self.parsedInfo = ParsedRequestInfo{
             .id = self.parseId(parsedRequest.object.get("id")),
@@ -148,7 +148,7 @@ pub const Handler = struct {
     }
 
     pub fn handle(self: *Handler, request: []const u8) ?[]const u8 {
-        self.parseRequst(request) catch |err| {
+        self.parseRequest(request) catch |err| {
             std.log.debug("Request parsing failed: {any}", .{err});
             return self.makeError(ec.ParseError, "Request parsing failed");
         };

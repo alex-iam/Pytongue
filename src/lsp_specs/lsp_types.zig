@@ -39,13 +39,14 @@ pub const LSPAny = union(enum) {
     pub fn jsonStringify(self: LSPAny, ws: anytype) !void {
         switch (self) {
             .LSPObject => |value| try value.jsonStringify(ws),
+            .null => |_| try ws.write(null),
+            // inline else => |value| try ws.write(value), // ?????????????????????????????????????????
             .LSPArray => |value| try ws.write(value),
             .string => |value| try ws.write(value),
             .integer => |value| try ws.write(value),
             .uinteger => |value| try ws.write(value),
             .decimal => |value| try ws.write(value),
             .boolean => |value| try ws.write(value),
-            .null => |_| try ws.write(null),
         }
     }
 };
