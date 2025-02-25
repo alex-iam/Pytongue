@@ -101,7 +101,7 @@ pub const Workspace = struct {
         const file = try std.fs.openFileAbsolute(filePath, .{ .mode = .read_only });
         defer file.close();
         const fileContents = try file.readToEndAlloc(self.allocator, FILE_SIZE_LIMIT);
-        defer self.allocator.free(fileContents);
+        defer self.allocator.free(fileContents); // what if we need it in treesitter later??
         if (existingFile != null and forceUpdate) {
             try existingFile.?.update(fileContents, self.parser);
             return existingFile.?;

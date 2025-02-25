@@ -23,7 +23,7 @@ const Range = lsp_specs.lsp_types.Range;
 const TextDocumentPositionParams = lsp_specs.params.TextDocumentPositionParams;
 
 pub const Symbol = struct {
-    name: []const u8,
+    name: []const u8, // has to be allocated
     kind: SymbolKind,
     position: Position,
     scope: ?*Scope,
