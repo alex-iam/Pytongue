@@ -14,8 +14,8 @@ test: ztest
 retest: build test
 
 patch:
-    scripts/bump.sh patch
+    scripts/bump.clj patch
 minor:
-    scripts/bump.sh minor
+    scripts/bump.clj minor
 major:
-    scripts/bump.sh major
+    scripts/bump.clj major
