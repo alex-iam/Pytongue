@@ -16,18 +16,28 @@
 // along with Pytongue. If not, see <https://www.gnu.org/licenses/>.
 
 const TreeSitter = @import("treesitter.zig").TreeSitter;
+const std = @import("std");
 const TSTree = TreeSitter.TSTree;
 const TSNode = TreeSitter.TSNode;
 
 const SymbolTable = @import("symbol_table.zig").SymbolTable;
 const PythonFile = @import("workspace.zig").PythonFile;
 
-fn parseTSNode(st: *SymbolTable, node: TSNode) !void {
-    const child_count = TreeSitter.ts_node_child_count(node);
-    var i: usize = 0;
-    while (i < child_count) : (i += 1) {
-        const child = TreeSitter.ts_node_child(node, @intCast(i));
-        parseTSNode(st, child);
+const TSSymbolKind = enum { Class, Function, Assignment, Identifier, Module, Other };
+
+fn classifyNodeType(nodeType: []const u8) TSSymbolKind {
+    if (std.mem.eql(u8, nodeType, "class_definition")) {
+        return .Class;
+    } else if (std.mem.eql(u8, nodeType, "function_definition")) {
+        return .Function;
+    } else if (std.mem.eql(u8, nodeType, "assignment")) {
+        return .Assignment;
+    } else if (std.mem.eql(u8, nodeType, "identifier")) {
+        return .Identifier;
+    } else if (std.mem.eql(u8, nodeType, "module")) {
+        return .Module;
+    } else {
+        return .Other;
     }
 }
 
@@ -48,6 +58,17 @@ fn parseTSNode(st: *SymbolTable, node: TSNode) !void {
 ///       - Create new Scope, look for `identifier` in children
 ///       - If found, create new Symbol, write ts_node_start_byte and ts_node_end_byte as range
 ///
+fn parseTSNode(st: *SymbolTable, node: TSNode) !void {
+    const node_type = TreeSitter.ts_node_type(node);
+
+    const child_count = TreeSitter.ts_node_child_count(node);
+    var i: usize = 0;
+    while (i < child_count) : (i += 1) {
+        const child = TreeSitter.ts_node_child(node, @intCast(i));
+        parseTSNode(st, child);
+    }
+}
+
 pub fn ParseASTIntoST(file: *PythonFile, st: *SymbolTable) !void {
     const rootNode = TreeSitter.ts_tree_root_node(file.tree);
     parseTSNode(st, rootNode);
