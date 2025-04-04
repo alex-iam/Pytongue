@@ -12,6 +12,7 @@ on:
       - "tests/**"
       - "build.zig"
       - "build.zig.zon"
+      - ".github/**"
   pull_request:
     branches: [ "master" ]
     paths:
