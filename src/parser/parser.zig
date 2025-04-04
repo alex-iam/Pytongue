@@ -21,6 +21,7 @@ const TSTree = TreeSitter.TSTree;
 const TSNode = TreeSitter.TSNode;
 
 const SymbolTable = @import("symbol_table.zig").SymbolTable;
+const Scope = @import("symbol_table.zig").Scope;
 const PythonFile = @import("workspace.zig").PythonFile;
 
 const TSSymbolKind = enum { Class, Function, Assignment, Identifier, Module, Other };
@@ -58,18 +59,24 @@ fn classifyNodeType(nodeType: []const u8) TSSymbolKind {
 ///       - Create new Scope, look for `identifier` in children
 ///       - If found, create new Symbol, write ts_node_start_byte and ts_node_end_byte as range
 ///
-fn parseTSNode(st: *SymbolTable, node: TSNode) !void {
-    const node_type = TreeSitter.ts_node_type(node);
+fn parseTSNode(st: *SymbolTable, node: TSNode, current_scope: ?*Scope) !void {
+    const node_type_str = TreeSitter.ts_node_type(node);
+    const node_type = classifyNodeType(node_type_str);
+    var scope = current_scope orelse &st.rootScope;
+
+    switch (node_type) {
+        .Module => {},
+    }
 
     const child_count = TreeSitter.ts_node_child_count(node);
     var i: usize = 0;
     while (i < child_count) : (i += 1) {
         const child = TreeSitter.ts_node_child(node, @intCast(i));
-        parseTSNode(st, child);
+        parseTSNode(st, child, scope);
     }
 }
 
 pub fn ParseASTIntoST(file: *PythonFile, st: *SymbolTable) !void {
     const rootNode = TreeSitter.ts_tree_root_node(file.tree);
-    parseTSNode(st, rootNode);
+    parseTSNode(st, rootNode, null);
 }

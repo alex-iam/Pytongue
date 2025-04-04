@@ -28,7 +28,7 @@ const Config = utils.Config;
 const logMessageFn = utils.logging.logMessageFn;
 const Logger = utils.logging.Logger;
 
-pub const std_options = .{
+pub const options = .{
     .logFn = logMessageFn,
 };
 

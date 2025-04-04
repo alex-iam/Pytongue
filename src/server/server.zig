@@ -62,7 +62,7 @@ pub const Server = struct {
         }
 
         var contentLength: ?usize = null;
-        var it = std.mem.split(u8, headers.items, "\r\n");
+        var it = std.mem.splitSequence(u8, headers.items, "\r\n");
         while (it.next()) |header| {
             if (std.mem.startsWith(u8, header, "Content-Length: ")) {
                 contentLength = std.fmt.parseInt(usize, header[16..], 10) catch {

@@ -83,7 +83,7 @@ pub const Scope = struct {
         // if range is not null, it's a file and its uri should match
         if ((self.range == null and
             (std.mem.eql(u8, self.uri, pos.textDocument.uri) or
-            std.mem.startsWith(u8, pos.textDocument.uri, self.uri))) or
+                std.mem.startsWith(u8, pos.textDocument.uri, self.uri))) or
             (self.range != null and std.mem.eql(u8, self.uri, pos.textDocument.uri) and pos.position.inRange(self.range.?)))
         {
             for (self.children.items) |child| {
