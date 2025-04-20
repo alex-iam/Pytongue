@@ -27,6 +27,7 @@ const FILE_SIZE_LIMIT = 5_000_000;
 pub const PythonFile = struct {
     tree: *TreeSitter.TSTree,
     uri: []const u8,
+    fileContents: []const u8, // allocate???
 
     pub fn init(
         fileContents: []const u8,
@@ -39,9 +40,10 @@ pub const PythonFile = struct {
             fileContents.ptr,
             @intCast(fileContents.len),
         ) orelse return error.ParseError;
-        return PythonFile{ .tree = tree, .uri = uri };
+        return PythonFile{ .tree = tree, .uri = uri, .fileContents = fileContents };
     }
     pub fn update(self: *PythonFile, fileContents: []const u8, parser: *TreeSitter.TSParser) !void {
+        self.fileContents = fileContents;
         self.tree = TreeSitter.ts_parser_parse_string(
             parser,
             self.tree,

@@ -4,4 +4,5 @@
    "zig-zls"
    "babashka"
    "python-next"
-   "just"))
+   "just"
+   "python-lsp-server"))
