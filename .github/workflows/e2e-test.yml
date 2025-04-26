@@ -38,7 +38,7 @@ jobs:
       uses: mlugg/setup-zig@v1
       with:
         version: '0.14.0'
-	use-cache: false
+        use-cache: false
 
     - name: Build project
       run: zig build
