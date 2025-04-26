@@ -114,7 +114,10 @@ def send_arbitrary_request(server):
 def read_response(server):
     def _read_response():
         header = server.stdout.readline().decode().strip()
-        content_length = int(header.split(": ")[1])
+        try:
+            content_length = int(header.split(": ")[1])
+        except IndexError:
+            raise Exception(f"Invalid data received from server: {header}")
         server.stdout.readline()  # Empty line
         return server.stdout.read(content_length).decode()
 
