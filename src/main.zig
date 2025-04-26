@@ -32,7 +32,7 @@ pub const std_options: std.Options = .{
     .logFn = logMessageFn,
 };
 
-pub fn initLogging(allocator: std.mem.Allocator, appDir: []u8) !void {
+pub fn initLogging(allocator: std.mem.Allocator, maybeAppDir: ?[]u8) !void {
     utils.logging.GlobalLogger = Logger.init(allocator);
 
     var envMap = try std.process.getEnvMap(allocator);
@@ -42,10 +42,12 @@ pub fn initLogging(allocator: std.mem.Allocator, appDir: []u8) !void {
 
     if (envMap.get("PYTONGUE_LOG")) |lfn| { // only used for testing now
         try utils.logging.GlobalLogger.openLogFile(lfn);
-    } else {
+    } else if (maybeAppDir) |appDir| {
         const pathParts = [2][]const u8{ appDir, fileName };
         const path = try std.fs.path.join(allocator, &pathParts);
         try utils.logging.GlobalLogger.openLogFile(path);
+    } else {
+        return error.LogsInitUnsuccessful;
     }
 }
 
@@ -64,7 +66,7 @@ pub fn runServer(allocator: std.mem.Allocator) !void {
 pub fn main() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     const allocator = arena.allocator();
-    const appDir = try utils.files.ensureAppDir(allocator);
+    const appDir: ?[]u8 = utils.files.ensureAppDir(allocator) catch null;
     try initLogging(allocator, appDir);
     try runServer(allocator);
     defer {
