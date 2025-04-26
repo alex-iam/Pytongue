@@ -66,12 +66,12 @@ pub fn runServer(allocator: std.mem.Allocator) !void {
 pub fn main() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     const allocator = arena.allocator();
-    const appDir: ?[]u8 = utils.files.ensureAppDir(allocator) catch null;
-    try initLogging(allocator, appDir);
+    const maybeAppDir: ?[]u8 = utils.files.ensureAppDir(allocator) catch null;
+    try initLogging(allocator, maybeAppDir);
     try runServer(allocator);
     defer {
         utils.logging.GlobalLogger.deinit();
-        allocator.free(appDir);
+        if (maybeAppDir) |d| allocator.free(d);
         arena.deinit();
     }
 }
