@@ -1,40 +1,85 @@
-# This config was automatically generated from your source code
-# Stacks detected: cicd:github-actions:.github/workflows,cicd:gitlab-workflows:.,deps:python:.
 version: 2.1
-orbs:
-  python: circleci/python@2
+
 jobs:
-  test-python:
-    # Install dependencies and run tests
+  build-and-test:
     docker:
-      - image: cimg/python:3.12-node
+      - image: ubuntu:latest
+    environment:
+      PYTONGUE_LOG: /tmp/pytongue.log
+      BUILD_DIR: zig-out/bin
+      FORCE_COLOR: 1
     steps:
       - checkout
-      - python/install-packages
+
+      - run:
+          name: Setup Zig with Signature Check
+          command: |
+            ZIG_VERSION="0.14.0"
+            ZIG_ARCH="zig-linux-x86_64"
+            ZIG_FILENAME="${ZIG_ARCH}-${ZIG_VERSION}.tar.xz"
+            ZIG_URL="https://ziglang.org/download/${ZIG_VERSION}/${ZIG_FILENAME}"
+            ZIG_SIG_URL="${ZIG_URL}.minisig"
+
+            echo "Downloading Zig..."
+            wget "${ZIG_URL}"
+            wget "${ZIG_SIG_URL}"
+
+            echo "Verifying Zig signature..."
+            # You might need to install minisign if it's not available
+            sudo apt-get update
+            sudo apt-get install -y minisign
+
+            # Zig's public key (you should verify this key!)
+            ZIG_PUBLIC_KEY="RWQRAe5+K035t2uw+Ff9P59N/01c5/09/09/09/09/09/09/09/09/09/09/09/09/09/09/09/09/09/09/09/09/09/09/09/09/09/09/09/09/09/09"
+
+            minisign -Vm "${ZIG_FILENAME}" -P "${ZIG_PUBLIC_KEY}" -x "${ZIG_FILENAME}.minisig"
+
+            echo "Extracting and installing Zig..."
+            tar -xf "${ZIG_FILENAME}"
+            sudo mv "${ZIG_ARCH}-${ZIG_VERSION}/zig" /usr/local/bin
+            zig version
+
+      - run:
+          name: Build project
+          command: zig build
+
+      - run:
+          name: Setup Python
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y python3.12 python3-pip
+            python3 --version
+            pip3 --version
+
+      - run:
+          name: Install Python dependencies
+          command: |
+            python3 -m pip install --upgrade pip
+            python3 -m pip install .
+
       - run:
           name: Run tests
-          command: pytest --junitxml=junit.xml || ((($? == 5)) && echo 'Did not find any tests to run.')
-      - store_test_results:
-          path: junit.xml
-  deploy:
-    # This is an example deploy job, not actually used by the workflow
-    docker:
-      - image: cimg/base:stable
-    steps:
-      # Replace this with steps to deploy to users
+          environment:
+            PYTONGUE_TEST_BINARY: /home/circleci/project/${BUILD_DIR}/pytongue
+          command: pytest tests/e2e
+
       - run:
-          name: deploy
-          command: '#e.g. ./deploy.sh'
-      - run:
-          name: found github actions config
-          command: ':'
-      - run:
-          name: found gitlab workflows config
-          command: ':'
+          name: Print test logs
+          command: |
+            echo "=== Test Logs ==="
+            cat ${PYTONGUE_LOG}
+          when: on_success
+
 workflows:
-  build-and-test:
+  build-and-test-workflow:
     jobs:
-      - test-python
-    # - deploy:
-    #     requires:
-    #       - test-python
+      - build-and-test:
+          filters:
+            branches:
+              only:
+                - master
+            paths:
+              - src/**
+              - tests/**
+              - build.zig
+              - build.zig.zon
