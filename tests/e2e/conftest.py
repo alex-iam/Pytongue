@@ -114,18 +114,6 @@ def send_arbitrary_request(server):
 def read_response(server):
     def _read_response():
         header = server.stdout.readline().decode().strip()
-
-        # === extra diagnostics ===
-        if not header.startswith("Content-Length:"):
-            # collect everything the process has said so far
-            err = server.stderr.read().decode(errors="replace")
-            raise RuntimeError(
-                f"Malformed or missing header: {header!r}\n"
-                f"server return-code: {server.poll()}\n"
-                f"stderr follows:\n{err}"
-            )
-        # =========================
-
         content_length = int(header.split(": ")[1])
         server.stdout.readline()  # Empty line
         return server.stdout.read(content_length).decode()
