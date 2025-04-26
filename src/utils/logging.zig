@@ -56,7 +56,9 @@ pub const Logger = struct {
         if (self.logFile) |*file| {
             file.close();
         }
-        self.logFile = f.openFileAppend(filename);
+        self.logFile = f.openFileAppend(filename) catch {
+            return error.LogFileOpeningFailed;
+        };
     }
     pub fn log(
         self: *Logger,

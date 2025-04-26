@@ -2,6 +2,7 @@
  '("uv"
    "zig"
    "zig-zls"
+   "lldb"
    "babashka"
    "python-next"
    "just"

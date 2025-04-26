@@ -23,7 +23,6 @@ on:
   workflow_dispatch:
 
 env:
-  PYTONGUE_LOG: /tmp/pytongue.log
   BUILD_DIR: zig-out/bin
   FORCE_COLOR: 1
 
@@ -57,10 +56,4 @@ jobs:
       env:
         PYTONGUE_TEST_BINARY: ${{ github.workspace }}/${{ env.BUILD_DIR }}/pytongue
       run: |
-        touch ${{ env.PYTONGUE_LOG }}
         pytest tests/e2e
-    - name: Print test logs
-      if: success()
-      run: |
-        echo "=== Test Logs ==="
-        cat ${{ env.PYTONGUE_LOG }}
