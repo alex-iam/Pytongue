@@ -56,10 +56,9 @@ jobs:
     - name: Run tests
       env:
         PYTONGUE_TEST_BINARY: ${{ github.workspace }}/${{ env.BUILD_DIR }}/pytongue
-      run: |
-        touch ${{ env.PYTONGUE_LOG }}
-        pytest tests/e2e
+      run: pytest tests/e2e
     - name: Print test logs
+      if: success()
       run: |
         echo "=== Test Logs ==="
         cat ${{ env.PYTONGUE_LOG }}
