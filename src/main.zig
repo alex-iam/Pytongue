@@ -40,9 +40,13 @@ pub fn initLogging(allocator: std.mem.Allocator, appDir: []u8) !void {
 
     const fileName: []const u8 = "pytongue.log"; // TODO use app name to construct this
 
-    const pathParts = [2][]const u8{ appDir, fileName };
-    const path = try std.fs.path.join(allocator, &pathParts);
-    try utils.logging.GlobalLogger.openLogFile(path);
+    if (envMap.get("PYTONGUE_LOG")) |lfn| { // only used for testing now
+        try utils.logging.GlobalLogger.openLogFile(lfn);
+    } else {
+        const pathParts = [2][]const u8{ appDir, fileName };
+        const path = try std.fs.path.join(allocator, &pathParts);
+        try utils.logging.GlobalLogger.openLogFile(path);
+    }
 }
 
 pub fn runServer(allocator: std.mem.Allocator) !void {
