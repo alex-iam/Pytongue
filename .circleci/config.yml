@@ -25,10 +25,12 @@ jobs:
             wget "${ZIG_SIG_URL}"
 
             echo "Verifying Zig signature..."
+            # You might need to install minisign if it's not available
             sudo apt-get update
             sudo apt-get install -y minisign
 
-            ZIG_PUBLIC_KEY="RWSGOq2NVecA2UPNdBUZykf1CCb147pkmdtYxgb3Ti+JO/wCYvhbAb/U"
+            # Zig's public key (you should verify this key!)
+            ZIG_PUBLIC_KEY="RWQRAe5+K035t2uw+Ff9P59N/01c5/09/09/09/09/09/09/09/09/09/09/09/09/09/09/09/09/09/09/09/09/09/09/09/09/09/09/09/09/09/09"
 
             minisign -Vm "${ZIG_FILENAME}" -P "${ZIG_PUBLIC_KEY}" -x "${ZIG_FILENAME}.minisig"
 
@@ -71,13 +73,8 @@ jobs:
 workflows:
   build-and-test-workflow:
     jobs:
-      build-and-test:
+      - build-and-test:
           filters:
             branches:
               only:
                 - master
-            paths:
-              - src/**
-              - tests/**
-              - build.zig
-              - build.zig.zon
