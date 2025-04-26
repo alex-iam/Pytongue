@@ -60,7 +60,6 @@ jobs:
         touch ${{ env.PYTONGUE_LOG }}
         pytest tests/e2e
     - name: Print test logs
-      if: success()
       run: |
         echo "=== Test Logs ==="
         cat ${{ env.PYTONGUE_LOG }}
