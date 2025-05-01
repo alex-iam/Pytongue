@@ -1,4 +1,12 @@
 image: archlinux
+packages:
+  - python
+  - python-pip
+  - wget
+  - tar
+  - gzip
+  - xz
+  - base-devel
 
 environment:
   PYTONGUE_LOG: /tmp/pytongue.log
@@ -8,63 +16,36 @@ environment:
 
 tasks:
 
-  - setup:
-      name: Install Dependencies
-      script:
-        - sudo pacman -Syu --noconfirm python python-pip wget tar gzip xz base-devel
-        - python --version
-        - pip --version
+  - setup: |
+      export ZIG_TARGET="linux-x86_64"
+      wget "https://ziglang.org/download/${ZIG_VERSION}/zig-${ZIG_TARGET}-${ZIG_VERSION}.tar.xz"
+      sudo mkdir -p /usr/local/lib/zig-${ZIG_VERSION}
+      sudo tar -xf "zig-${ZIG_TARGET}-${ZIG_VERSION}.tar.xz" -C /usr/local/lib/zig-${ZIG_VERSION}/ --strip-components=1
+      sudo ln -sf /usr/local/lib/zig-${ZIG_VERSION}/zig /usr/local/bin/zig
+      rm "zig-${ZIG_TARGET}-${ZIG_VERSION}.tar.xz"
+      zig version
 
-        - export ZIG_TARGET="x86_64-linux"
-        - wget "https://ziglang.org/download/${ZIG_VERSION}/zig-linux-${ZIG_TARGET}-${ZIG_VERSION}.tar.xz"
+  - build: |
+      cd Pytongue
+      zig build
+      ls -l zig-out/bin
 
-        - sudo mkdir -p /usr/local/lib/zig-${ZIG_VERSION}
-        - sudo tar -xf "zig-linux-${ZIG_TARGET}-${ZIG_VERSION}.tar.xz" -C /usr/local/lib/zig-${ZIG_VERSION}/ --strip-components=1
-        - sudo ln -sf /usr/local/lib/zig-${ZIG_VERSION}/zig /usr/local/bin/zig
-        - rm "zig-linux-${ZIG_TARGET}-${ZIG_VERSION}.tar.xz"
+  - install_python_deps: |
+      cd Pytongue
+      python -m pip install --user
 
-        - zig version
+  - test: |
+      cd Pytongue
+      export PYTONGUE_TEST_BINARY="${PWD}/zig-out/bin/pytongue"
+      echo "Test binary path: ${PYTONGUE_TEST_BINARY}"
+      test -x "${PYTONGUE_TEST_BINARY}" || (echo "Test binary not found or not executable!" && exit 1)
+      export PATH=$PATH:/home/build/.local/bin
+      pytest tests/e2e
 
-  - prepare:
-      name: Navigate into project directory
-      script:
-        - cd Pytongue
-        - pwd
-        - ls -la
-
-  - build:
-      name: Build Zig project
-      script:
-        - cd Pytongue
-        - zig build
-        - ls -l zig-out/bin
-
-  - install_python_deps:
-      name: Install Python dependencies
-      script:
-        - cd Pytongue
-        # Upgrade pip
-        - python -m pip install --user --upgrade pip
-        - python -m pip install --user
-        - python -m pip install --user
-
-  - test:
-      name: Run e2e tests
-      script:
-        - cd pytongue
-        - export PYTONGUE_TEST_BINARY="${PWD}/zig-out/bin/pytongue"
-        - echo "Test binary path: ${PYTONGUE_TEST_BINARY}"
-        - test -x "${PYTONGUE_TEST_BINARY}" || (echo "Test binary not found or not executable!" && exit 1)
-        - export PATH=$PATH:/home/build/.local/bin
-        - pytest tests/e2e
-
-  - show_logs:
-      name: Display test logs
-      script:
-        - echo "=== Test Logs (${PYTONGUE_LOG}) ==="
-        - |
-          if [ -f "${PYTONGUE_LOG}" ]; then
-            cat "${PYTONGUE_LOG}"
-          else
-            echo "Log file ${PYTONGUE_LOG} not found."
-          fi
+  - show_logs: |
+      echo "=== Test Logs (${PYTONGUE_LOG}) ==="
+      if [ -f "${PYTONGUE_LOG}" ]; then
+        cat "${PYTONGUE_LOG}"
+      else
+        echo "Log file ${PYTONGUE_LOG} not found."
+      fi
