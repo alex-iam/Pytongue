@@ -1,4 +1,4 @@
-# Pytongue [![Tests](https://github.com/alex-korzh/Pytongue/actions/workflows/e2e-test.yml/badge.svg)](https://github.com/alex-korzh/Pytongue/actions/workflows/e2e-test.yml)
+# Pytongue [![Tests](https://github.com/alex-korzh/Pytongue/actions/workflows/e2e-test.yml/badge.svg)](https://github.com/alex-korzh/Pytongue/actions/workflows/e2e-test.yml) [![builds.sr.ht status](https://builds.sr.ht/~alex-iam/Pytongue.svg)](https://builds.sr.ht/~alex-iam/Pytongue?)
 A project that aims to develop an LSP server for Python in Zig.
 
 ## Current state of the development, plans:
