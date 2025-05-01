@@ -32,7 +32,7 @@ tasks:
 
   - install_python_deps: |
       cd Pytongue
-      python -m pip install --user --break-system-packages
+      python -m pip install . --user --break-system-packages
 
   - test: |
       cd Pytongue
