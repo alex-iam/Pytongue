@@ -45,4 +45,10 @@ The current version format is stored in `version` file in the root of the projec
 
 ## License
 
-See LICENSE.md
+This program statically links the following MIT‑licensed components:
+
+- tree‑sitter — see licenses/LICENSE.tree‑sitter
+- tree‑sitter‑python — see licenses/LICENSE.tree‑sitter‑python
+
+
+For the source code license, see LICENSE.md

@@ -1,3 +1,5 @@
+/* Copyright (c) 2018‑2024 Max Brunsfeld — see licenses/LICENSE.tree‑sitter */
+
 #ifndef TREE_SITTER_API_H_
 #define TREE_SITTER_API_H_
 
